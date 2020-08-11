@@ -13,7 +13,7 @@ async def netease(context):
         data = json.loads(req.text)
         res = data['Comment'] + '\n\n来自 @' + data[
             'UserName'] + ' 在鸽曲"<a href="http://music.163.com/song/media/outer/url?id=' + str(data['SongId']) + '.mp3">' + \
-              data['SongName'] + '--by' + data['SongAutho'] + '</a>' + '</a>下方的评论\n\n该评论获得了' + str(data['likedCount']) + '个赞！'
+              data['SongName'] + '</a>"-' + data['SongAutho'] + '</a>下方的评论'
         await context.edit(res, parse_mode='html', link_preview=True)
     else:
         await context.edit("出错了呜呜呜 ~ 无法访问到 API 服务器 。")
