@@ -59,6 +59,7 @@
 - profile （资料类）
     - `autochangename` : 自动更新 last_name 为时间等。
     - `throwit` : 生成一张 扔头像 图片。
+    - `mjx` : 随机发一张淘宝买家秀
 - daily （便民类）
     - `weather` : 查询天气。
     - `xtao-some` : 一大堆便民功能。
