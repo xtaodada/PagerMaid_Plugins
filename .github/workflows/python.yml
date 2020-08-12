@@ -1,0 +1,28 @@
+name: Github commit to telegram
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    # 此步骤使用 GitHub 的 https://github.com/actions/checkout
+    - name: checkout actions
+      uses: actions/checkout@v1
+
+    # 设置python环境
+    # 此步骤使用 GitHub 的 https://github.com/actions/setup-python
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+
+    # 安装依赖
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+
+    # 发送通知
+    - name: Send notice
+      run: python telegram_update.py ${{ secrets.TG_BOT_TOKEN }}

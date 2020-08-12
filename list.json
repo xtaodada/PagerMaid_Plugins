@@ -82,7 +82,7 @@
         },
         {
             "name": "throwit",
-            "version": "1.5",
+            "version": "1.6",
             "section": "profile",
             "maintainer": "xtaodada",
             "size": "6.9 kb",
@@ -122,7 +122,7 @@
         },
         {
             "name": "denyu",
-            "version": "1.0",
+            "version": "1.1",
             "section": "chat",
             "maintainer": "fruitymelon",
             "size": "2.7 kb",
@@ -139,6 +139,26 @@
             "supported": true,
             "des-short": "生成隐藏链接。",
             "des": "非链接的纯文字将直接隐藏。"
+        },
+        {
+            "name": "nthmsg",
+            "version": "1.0",
+            "section": "chat",
+            "maintainer": "seiuneko",
+            "size": "0.9 kb",
+            "supported": true,
+            "des-short": "获取你发送的第 n 条消息。",
+            "des": "这个人很懒，什么都没有留下。"
+        },
+        {
+            "name": "portball",
+            "version": "1.1",
+            "section": "chat",
+            "maintainer": "丢失了",
+            "size": "3.0 kb",
+            "supported": false,
+            "des-short": "回复你要临时禁言的人的消息来实现XX秒的禁言。",
+            "des": "这个人很懒，什么都没有留下。"
         }
     ]
 }

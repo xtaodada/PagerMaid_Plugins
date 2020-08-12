@@ -89,14 +89,20 @@ async def throwit(context):
             r = get('https://raw.githubusercontent.com/xtaodada/PagerMaid_Plugins/master/throwit/2.png')
             with open("plugins/throwit/2.png", "wb") as code:
                 code.write(r.content)
+        if not exists('plugins/throwit/3.png'):
+            r = get('https://raw.githubusercontent.com/xtaodada/PagerMaid_Plugins/master/throwit/3.png')
+            with open("plugins/throwit/3.png", "wb") as code:
+                code.write(r.content)
         # 随机数生成
-        randint_r = randint(1,2)
+        randint_r = randint(1,3)
         # 将头像转为圆形
         markImg = Image.open("plugins/throwit/" + str(target_user.user.id) + ".jpg")
         if randint_r == 1:
             thumb_width = 136
         elif randint_r == 2:
             thumb_width = 122
+        elif randint_r == 3:
+            thumb_width = 180
         im_square = crop_max_square(markImg).resize((thumb_width, thumb_width), Image.LANCZOS)
         im_thumb = mask_circle_transparent(im_square, 0)
         im_thumb.save("plugins/throwit/" + str(target_user.user.id) + ".png")
@@ -105,6 +111,8 @@ async def throwit(context):
             background = Image.open("plugins/throwit/2.png")
         elif randint_r == 2:
             background = Image.open("plugins/throwit/1.png")
+        elif randint_r == 3:
+            background = Image.open("plugins/throwit/3.png")
         foreground = Image.open("plugins/throwit/" + str(target_user.user.id) + ".png")
         if len(context.parameter) == 2:
             diu_round = True
@@ -114,6 +122,8 @@ async def throwit(context):
             background.paste(foreground, (19, 181), foreground)
         elif randint_r == 2:
             background.paste(foreground, (368, 16), foreground)
+        elif randint_r == 3:
+            background.paste(foreground, (331, 281), foreground)
         background.save('plugins/throwit/throwout.webp')
         target_file = await context.client.upload_file('plugins/throwit/throwout.webp')
         try:

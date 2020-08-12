@@ -54,6 +54,8 @@
     - `sendat` : 定时发送消息。
     - `atadmins_atall` : 一键 AT 本群管理员、群员。
     - `denyu` : 在某群中强制禁言某用户。
+    - `nthmsg` : 获取你发送的第 n 条消息。
+    - `portball` : 回复你要临时禁言的人的消息来实现XX秒的禁言。
 - profile （资料类）
     - `autochangename` : 自动更新 last_name 为时间等。
     - `throwit` : 生成一张 扔头像 图片。

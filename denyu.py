@@ -6,7 +6,7 @@ from pagermaid import redis, log, redis_status
 from pagermaid.listener import listener
 
 @listener(is_plugin=True, outgoing=True, command="denyu",
-          description="在某群中强制禁言某用户，需要删除他人消息权限，需要 redis",
+          description="在某群中强制禁言某用户，需要删除他人消息权限，需要 redis。强制禁言全群请使用 `-deny`。",
           parameters="<userid> <true|false|status> 或直接回复用户并指定 <true|false|status>")
 async def denyu(context):
     """ Toggles denying of a user. """
@@ -20,7 +20,7 @@ async def denyu(context):
     if len(context.parameter) != 2:
         reply_to_msg = await context.get_reply_message()
         if not reply_to_msg:
-            await context.edit("出错了呜呜呜 ~ 无效的参数。")
+            await context.edit("在某群中强制禁言某用户，需要删除他人消息权限，需要 redis。用法：回复某条消息，格式为 `-denyu <true|false|status>`")
             return
         uid = reply_to_msg.sender.id
         offset = 1
@@ -49,9 +49,9 @@ async def denyu(context):
         if redis.get(f"denieduser.{context.chat_id}.{uid}"):
             await context.edit("emm...当前对话的该用户已存在于自动拒绝对话列表中。")
         else:
-            await context.edit("emm...当前对话不存在与自动拒绝对话列表中。")
+            await context.edit("emm...当前对话不存在于自动拒绝对话列表中。")
     else:
-        await context.edit("出错了呜呜呜 ~ 无效的参数。")
+        await context.edit("出错了呜呜呜 ~ 无效的参数。只能为 `<true|false|status>`。")
 
 @listener(incoming=True, ignore_edited=True)
 async def message_removal_user(context):
