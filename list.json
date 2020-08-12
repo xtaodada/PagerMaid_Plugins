@@ -161,6 +161,16 @@
             "des": "这个人很懒，什么都没有留下。"
         },
         {
+            "name": "resou",
+            "version": "1.0",
+            "section": "daily",
+            "maintainer": "KorenKrita",
+            "size": "5 kb",
+            "supported": true,
+            "des-short": "微博，知乎，抖音实时热搜。",
+            "des": "命令：wbrs，zhrs，dyrs。"
+        },
+        {
             "name": "whois",
             "version": "1.0",
             "section": "daily",
