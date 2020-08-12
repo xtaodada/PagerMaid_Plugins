@@ -171,6 +171,16 @@
             "des": "命令：wbrs，zhrs，dyrs，brank。"
         },
         {
+            "name": "mjx",
+            "version": "1.0",
+            "section": "daily",
+            "maintainer": "KorenKrita",
+            "size": "1 kb",
+            "supported": true,
+            "des-short": "随机带评价买家秀，随机涩气买家秀",
+            "des": "命令：mjx，sqmjx。"
+        },
+        {
             "name": "whois",
             "version": "1.0",
             "section": "daily",
