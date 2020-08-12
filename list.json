@@ -159,6 +159,16 @@
             "supported": false,
             "des-short": "回复你要临时禁言的人的消息来实现XX秒的禁言。",
             "des": "这个人很懒，什么都没有留下。"
+        },
+        {
+            "name": "whois",
+            "version": "1.0",
+            "section": "daily",
+            "maintainer": "KorenKrita",
+            "size": "1.1 kb",
+            "supported": true,
+            "des-short": "查询域名whois信息",
+            "des": "查看域名是否已被注册、注册日期、过期日期、域名状态、DNS解析服务器等。"
         }
     ]
 }
