@@ -18,7 +18,7 @@ async def netease(context):
 
 
 @listener(is_plugin=True, outgoing=True, command="sqmjx",
-          description="随机一条网易云音乐评论。")
+          description="一个淘宝涩气买家秀。")
 async def netease(context):
     await context.edit("获取中 . . .")
     req = get("http://api.uomg.com/api/rand.img3?format=json")
