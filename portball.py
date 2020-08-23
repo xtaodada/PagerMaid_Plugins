@@ -8,7 +8,7 @@ from telethon.tl.types import ChannelParticipantsAdmins
 
 @listener(incoming=True, outgoing=True, command="portball",
           description="回复你要临时禁言的人的消息来实现XX秒的禁言",
-          parameters="<理由>(空格)<时间/秒>")            
+          parameters="<理由>(空格)<时间/秒>")
 async def portball(context):
     reply = await context.get_reply_message()
     if context.is_group:
