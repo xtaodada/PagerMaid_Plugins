@@ -1,9 +1,7 @@
-import json
 import random
 from time import sleep
 from requests import get
 from pagermaid.listener import listener
-from os import remove, popen
 
 
 @listener(is_plugin=True, outgoing=True, command="cosm",
