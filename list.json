@@ -229,6 +229,16 @@
             "supported": true,
             "des-short": "多网站随机获取写真",
             "des": "从不同的网站中调取妹子写真，但是无漏点，放心使用（安全版ghs）。命令：meizi。"
+        },
+        {
+            "name": "acg-multi",
+            "version": "1.0",
+            "section": "profile",
+            "maintainer": "TNTcraftHIM",
+            "size": "1.4 kb",
+            "supported": true,
+            "des-short": "多网站随机获取ACG图",
+            "des": "从几个不同的图库中随机获取二刺螈（bushi）ACG图片，基本都是手机尺寸的图。命令：acgm。"
         }
     ]
 }
