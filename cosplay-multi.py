@@ -2,6 +2,7 @@ import random
 from time import sleep
 from requests import get
 from pagermaid.listener import listener
+from os import remove
 
 
 @listener(is_plugin=True, outgoing=True, command="cosm",
