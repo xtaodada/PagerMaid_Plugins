@@ -6,7 +6,7 @@ from os import remove
 import re
 import time
 
-@listener(is_plugin=True, outgoing=True, command="atadmins",
+@listener(is_plugin=True, incoming=True, outgoing=True, command="atadmins",
           description="一键 AT 本群管理员（仅在群组中有效）",
           parameters="<要说的话>")
 async def atadmins(context):
@@ -34,7 +34,7 @@ async def atadmins(context):
     # await context.reply(' , '.join(admin_list))
     await context.delete()
 
-@listener(outgoing=True, command="atall",
+@listener(is_plugin=True, incoming=True, outgoing=True, command="atall",
           description="一键 AT 本群成员（仅在群组中有效）")
 async def atall(context):
     await context.edit('正在获取成员列表中...')
