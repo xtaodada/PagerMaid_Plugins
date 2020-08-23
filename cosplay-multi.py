@@ -1,4 +1,4 @@
-import random
+from random import randint
 from time import sleep
 from requests import get
 from pagermaid.listener import listener
@@ -10,8 +10,8 @@ from os import remove
 async def joke(context):
     await context.edit("获取中 . . .")
     status = False
-    for i in range (20): #最多重试20次
-        website = random.randint(0, 4)
+    for _ in range (20): #最多重试20次
+        website = randint(0, 4)
         if website == 0:
             img = get("https://api.helloworld.la/xiezhen_cosplay.php")
         elif website == 1:
@@ -31,12 +31,15 @@ async def joke(context):
                 await context.edit("正在上传图片")
                 f.write(img.content)
                 await context.client.send_file(
-                context.chat_id,
-                "tu.png",
-             reply_to=None,
-                 caption=None
-             )
-            remove('tu.png')
+                  context.chat_id,
+                  "tu.png",
+                  reply_to=None,
+                  caption=None
+                )
+            try:
+                remove('tu.png')
+            except:
+                pass
             status = True
             break #成功了就赶紧结束啦！
 
