@@ -23,11 +23,11 @@ async def joke(context):
         elif website == 4:
             img = get("https://cdn.seovx.com/?mom=302")
         elif website == 5:
-            img = get("https://uploadbeta.com/api/pictures/random/?key=%E6%80%A7%E6%84%9F")
+            img = get("https://uploadbeta.com/api/pictures/random/?key=%E5%A6%B9%E5%AD%90")
         elif website == 6:
             img = get("https://uploadbeta.com/api/pictures/random/?key=%E6%8E%A8%E5%A5%B3%E9%83%8E")
         elif website == 7:
-            img = get("https://api.169740.com/api/rand.img2")
+            img = get("https://uploadbeta.com/api/pictures/random/?key=%E5%A5%B3%E7%A5%9E")
         if img.status_code == 200:
             with open(r'tu.png', 'wb') as f:
                 await context.edit("正在上传图片")
