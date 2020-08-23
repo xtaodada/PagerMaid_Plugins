@@ -209,6 +209,26 @@
             "supported": false,
             "des-short": "生成一张 吃头像 图片。",
             "des": "这个人很懒，什么都没有留下。"
+        },
+        {
+            "name": "cosplay-multi",
+            "version": "1.0",
+            "section": "profile",
+            "maintainer": "TNTcraftHIM",
+            "size": "1.8 kb",
+            "supported": true,
+            "des-short": "多网站随机获取Cos图",
+            "des": "在不同的几个网站中随机获取Cosplay图片，解决了cosplay单个API流量用尽后无法获取的问题。命令：cosm。"
+        },
+        {
+            "name": "meizi",
+            "version": "1.0",
+            "section": "profile",
+            "maintainer": "TNTcraftHIM",
+            "size": "2.0 kb",
+            "supported": true,
+            "des-short": "多网站随机获取写真",
+            "des": "从不同的网站中调取妹子写真，但是无漏点，放心使用（安全版ghs）。命令：meizi。"
         }
     ]
 }
