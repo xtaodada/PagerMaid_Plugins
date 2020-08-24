@@ -1,5 +1,4 @@
 from asyncio import sleep
-from telethon.errors.rpcbaseerrors import BadRequestError
 from pagermaid import log
 from pagermaid.listener import listener
 
