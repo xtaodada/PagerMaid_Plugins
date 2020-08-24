@@ -1,4 +1,4 @@
-import random
+from random import randint
 from time import sleep
 from requests import get
 from pagermaid.listener import listener
@@ -7,11 +7,11 @@ from os import remove
 
 @listener(is_plugin=True, outgoing=True, command="meizi",
           description="多网站随机获取性感（可能）的写真")
-async def joke(context):
+async def meizi(context):
     await context.edit("获取中 . . .")
     status = False
     for _ in range (20): #最多重试20次
-        website = random.randint(0, 13)
+        website = randint(0, 13)
         if website == 0:
             img = get("https://mm.52.mk")
         elif website == 1:
