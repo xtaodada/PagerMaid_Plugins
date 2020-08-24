@@ -1,4 +1,4 @@
-from random import randint
+import random
 from time import sleep
 from requests import get
 from pagermaid.listener import listener
@@ -11,7 +11,7 @@ async def meizi(context):
     await context.edit("获取中 . . .")
     status = False
     for _ in range (20): #最多重试20次
-        website = randint(0, 13)
+        website = random.randint(0, 13)
         if website == 0:
             img = get("https://mm.52.mk")
         elif website == 1:
