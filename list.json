@@ -112,7 +112,7 @@
         },
         {
             "name": "atadmins_atall",
-            "version": "1.1",
+            "version": "1.0",
             "section": "chat",
             "maintainer": "Pentacene",
             "size": "2.5 kb",
@@ -152,11 +152,11 @@
         },
         {
             "name": "portball",
-            "version": "1.21",
+            "version": "1.1",
             "section": "chat",
-            "maintainer": "Pentacene",
-            "size": "3.6 kb",
-            "supported": true,
+            "maintainer": "丢失了",
+            "size": "3.0 kb",
+            "supported": false,
             "des-short": "回复你要临时禁言的人的消息来实现XX秒的禁言。",
             "des": "这个人很懒，什么都没有留下。"
         },
@@ -212,30 +212,30 @@
         },
         {
             "name": "cosplay-multi",
-            "version": "1.0",
+            "version": "1.1",
             "section": "profile",
             "maintainer": "TNTcraftHIM",
-            "size": "1.8 kb",
+            "size": "2.0 kb",
             "supported": true,
             "des-short": "多网站随机获取Cos图",
             "des": "在不同的几个网站中随机获取Cosplay图片，解决了cosplay单个API流量用尽后无法获取的问题。命令：cosm。"
         },
         {
             "name": "meizi",
-            "version": "1.0",
+            "version": "1.1",
             "section": "profile",
             "maintainer": "TNTcraftHIM",
-            "size": "2.0 kb",
+            "size": "2.6 kb",
             "supported": true,
             "des-short": "多网站随机获取写真",
             "des": "从不同的网站中调取妹子写真，但是无漏点，放心使用（安全版ghs）。命令：meizi。"
         },
         {
             "name": "acg-multi",
-            "version": "1.0",
+            "version": "1.1",
             "section": "profile",
             "maintainer": "TNTcraftHIM",
-            "size": "1.4 kb",
+            "size": "2.4 kb",
             "supported": true,
             "des-short": "多网站随机获取ACG图",
             "des": "从几个不同的图库中随机获取二刺螈（bushi）ACG图片，基本都是手机尺寸的图。命令：acgm。"

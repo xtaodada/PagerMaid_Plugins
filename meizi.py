@@ -1,4 +1,4 @@
-from random import randint
+import random
 from time import sleep
 from requests import get
 from pagermaid.listener import listener
@@ -11,15 +11,15 @@ async def joke(context):
     await context.edit("获取中 . . .")
     status = False
     for _ in range (20): #最多重试20次
-        website = randint(0, 7)
+        website = random.randint(0, 13)
         if website == 0:
             img = get("https://mm.52.mk")
         elif website == 1:
             img = get("https://api.helloworld.la/xiezhen_xinggan.php")
         elif website == 2:
-            img = get("https://api.helloworld.la/bizhi_meizi.php")
+            img = get("https://api.qicaiyun.top/sjbz/api.php?lx=meizi")
         elif website == 3:
-            img = get("https://uploadbeta.com/api/pictures/random/?key=%E5%A4%A7%E5%B0%BA%E5%BA%A6")
+            img = get("http://api.btstu.cn/sjbz/?lx=meizi")
         elif website == 4:
             img = get("https://cdn.seovx.com/?mom=302")
         elif website == 5:
@@ -27,7 +27,19 @@ async def joke(context):
         elif website == 6:
             img = get("https://uploadbeta.com/api/pictures/random/?key=%E6%8E%A8%E5%A5%B3%E9%83%8E")
         elif website == 7:
-            img = get("https://uploadbeta.com/api/pictures/random/?key=%E5%A5%B3%E7%A5%9E")
+            img = get("https://uploadbeta.com/api/pictures/random/?key=%E7%BE%8E%E5%A5%B3")
+        elif website == 8:
+            img = get("https://api.941ka.cn/api/mnxz")
+        elif website == 9:
+            img = get("https://api.lyiqk.cn/sexylady")
+        elif website == 10:
+            img = get("https://api.pingping6.com/tools/acg3/index.php")
+        elif website == 11:
+            img = get("https://api.pingping6.com/tools/acg3")
+        elif website == 12:
+            img = get("https://api.diskgirl.com/image/api.php?t=&v=0.9451485087333713")
+        elif website == 13:
+            img = get("https://api.diskgirl.com/image/api.php?t=&v=" + str(random.uniform(0, 100)))
         if img.status_code == 200:
             with open(r'tu.png', 'wb') as f:
                 await context.edit("正在上传图片")

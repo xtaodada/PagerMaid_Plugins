@@ -11,7 +11,7 @@ async def joke(context):
     await context.edit("获取中 . . .")
     status = False
     for _ in range (20): #最多重试20次
-        website = randint(0, 4)
+        website = randint(0, 6)
         if website == 0:
             img = get("https://api.helloworld.la/xiezhen_cosplay.php")
         elif website == 1:
@@ -22,6 +22,10 @@ async def joke(context):
             img = get("http://api.rosysun.cn/cos")
         elif website == 4:
             img = get("https://uploadbeta.com/api/pictures/random/?key=%E5%8A%A8%E6%BC%AB")
+        elif website == 5:
+            img = get("https://uploadbeta.com/api/pictures/random/?key=%E4%BA%8C%E6%AC%A1%E5%85%83")
+        elif website == 6:
+            img = get("https://xn--wcs142h.herokuapp.com/")
         if img.status_code == 200:
             if website == 3:
                 img = get(img.content)
