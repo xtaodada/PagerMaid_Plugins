@@ -1,4 +1,4 @@
-from random import randint
+import random
 from time import sleep
 from requests import get
 from pagermaid.listener import listener
@@ -11,7 +11,7 @@ async def joke(context):
     await context.edit("获取中 . . .")
     status = False
     for _ in range (20): #最多重试20次
-        website = randint(0, 11)
+        website = random.randint(0, 13)
         if website == 0:
             img = get("https://mm.52.mk")
         elif website == 1:
@@ -36,6 +36,10 @@ async def joke(context):
             img = get("https://api.pingping6.com/tools/acg3/index.php")
         elif website == 11:
             img = get("https://api.pingping6.com/tools/acg3")
+        elif website == 12:
+            img = get("https://api.diskgirl.com/image/api.php?t=&v=0.9451485087333713")
+        elif website == 13:
+            img = get("https://api.diskgirl.com/image/api.php?t=&v=" + str(random.uniform(0, 100)))
         if img.status_code == 200:
             with open(r'tu.png', 'wb') as f:
                 await context.edit("正在上传图片")

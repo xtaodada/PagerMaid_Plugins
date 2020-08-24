@@ -1,3 +1,4 @@
+import json
 from random import randint
 from time import sleep
 from requests import get
@@ -11,7 +12,7 @@ async def joke(context):
     await context.edit("获取中 . . .")
     status = False
     for _ in range (20): #最多重试20次
-        website = randint(0, 3)
+        website = randint(0, 9)
         if website == 0:
             img = get("http://api.btstu.cn/sjbz/?lx=m_dongman")
         elif website == 1:
@@ -20,7 +21,25 @@ async def joke(context):
             img = get("https://img.xjh.me/random_img.php?type=bg&ctype=acg&return=302&device=mobile")
         elif website == 3:
             img = get("https://www.yunboys.cn/sjbz/api.php?method=mobile&lx=dongman")
+        elif website == 4:
+            img = get("http://www.dmoe.cc/random.php")
+        elif website == 5:
+            img = get("https://api.vvhan.com/api/acgimg")
+        elif website == 6:
+            img = get("http://api.mtyqx.cn/api/random.php")
+        elif website == 7:
+            img = get("http://random.firefliestudio.com/")
+        elif website == 8:
+            img = get("https://api.mmcee.cn/acgimg/acgurl.php")
+        elif website == 9:
+            img = get('https://api.lolicon.app/setu/?r18=0')
         if img.status_code == 200:
+            if website == 9:
+                tmp = json.loads(img.content)
+                img = tmp['data'][0]['url']
+                img = get(img)
+                if img.status_code != 200:
+                    continue #如果返回不正常就赶紧下一回
             with open(r'tu.png', 'wb') as f:
                 await context.edit("正在上传图片")
                 f.write(img.content)
