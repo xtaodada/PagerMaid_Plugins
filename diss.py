@@ -14,7 +14,7 @@ async def diss(context):
 
 @listener(is_plugin=True, outgoing=True, command="biss",
           description="加带力度版祖安语录。")
-async def diss(context):
+async def biss(context):
     await context.edit("获取中 . . .")
     req = get("https://nmsl.shadiao.app/api.php?&from=tnt")
     if req.status_code == 200:
