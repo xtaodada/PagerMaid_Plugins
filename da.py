@@ -1,5 +1,3 @@
-""" Module to automate message deletion. """
-
 from asyncio import sleep
 from telethon.errors.rpcbaseerrors import BadRequestError
 from pagermaid import log
@@ -9,7 +7,6 @@ from pagermaid.listener import listener
           description="以此命令删除所有消息。（非群组管理员只删除自己的消息）",
           parameters="<text>")
 async def prune(context):
-    """ Purge every single message after the message you replied to. """
     if len(context.parameter) > 2 or len(context.parameter) == 0:
         await context.edit("\n呜呜呜，请执行 `-da true` 来删除所有消息。")
         return
