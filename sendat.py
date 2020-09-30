@@ -221,7 +221,7 @@ async def sendatdump(context):
     await context.edit(".\n-sendat " + "\n-sendat ".join(clean_mem))
 
 @listener(outgoing=True, command="sendatparse", diagnostics=True, ignore_edited=True,
-          description="导入已导出的 sendat 配置")
+          description="导入已导出的 sendat 配置。用法：-sendatparse 在此处粘贴 -sendatdump 命令的输出结果")
 async def sendatparse(context):
     chat = await context.get_chat()
     text = "\n".join(context.message.text.split("\n")[1:])
@@ -233,6 +233,7 @@ async def sendatparse(context):
     for i in range(len(lines)):
         line = lines[i]
         sent = await sendmsg(context, chat, line)
+        await asyncio.sleep(1)
         sent.parameter = line.replace("-sendat ", "").split(" ")
         await sendat(sent)
 
