@@ -372,7 +372,7 @@ async def tx_t(context):
     try:
         await context.edit("正在生成翻译中 . . .")
         tx_json = json.loads(requests.get(
-        "https://xtaolink.cn/git/m/t.php?lang=" + lang + '&text=' + clear_emojis(message)).content.decode(
+        "http://xtaolink.cn/git/m/t.php?lang=" + lang + '&text=' + clear_emojis(message)).content.decode(
         "utf-8"))
         if not tx_json['msg'] == 'ok':
             context.edit("出错了呜呜呜 ~ 翻译出错")
