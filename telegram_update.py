@@ -2,8 +2,6 @@ import json, time, sys
 from requests import get, post
 
 token = str(sys.argv[1])
-
-time.sleep(30)
 main = json.loads(get("https://api.github.com/repos/xtaodada/PagerMaid_Plugins/commits/master").content)
 push_content = {}
 push_content['chat_id'] = '-1001441461877'
