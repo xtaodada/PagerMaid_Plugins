@@ -14,9 +14,7 @@ from os import remove
 async def guess(context):
     reply = await context.get_reply_message()
     await context.edit("获取中 . . .")
-    if reply:
-        pass
-    else:
+    if not reply:
         context.edit("宁需要回复一句话")
         return True
     text = {'text': str(reply.message.replace("/guess ", "").replace(" ", ""))}
@@ -48,7 +46,7 @@ async def admin(context):
     try:
         admins = await context.client.get_participants(chat, filter=ChannelParticipantsAdmins)
     except:
-        await context.edit('请在群组中运行。')
+        await context.edit('请在群组中使用。')
         return True
     admin_list = []
     for admin in admins:
@@ -278,11 +276,9 @@ async def pixiv(context):
                     try:
                         await context.edit('正在下载图片中 ...')
                         try:
-                            r = requests.get('https://daidr.me/imageProxy/?url=' +
-                                                    pixiv_json['illust']['meta_single_page']['original_image_url'])
+                            r = requests.get(pixiv_json['illust']['meta_single_page']['original_image_url'].replace('i.pximg.net','i.pixiv.cat'))
                         except:
-                            r = requests.get('https://daidr.me/imageProxy/?url=' +
-                                             pixiv_json['illust']['meta_pages'][pixiv_page - 1]['image_urls']['original'])
+                            r = requests.get(pixiv_json['illust']['meta_pages'][pixiv_page - 1]['image_urls']['original'].replace('i.pximg.net','i.pixiv.cat'))
                         with open("pixiv.jpg", "wb") as code:
                             code.write(r.content)
                         await context.edit('正在上传图片中 ...')
@@ -333,11 +329,9 @@ async def pixiv(context):
                 try:
                     await context.edit('正在下载图片中 ...')
                     try:
-                        r = requests.get('https://daidr.me/imageProxy/?url=' +
-                                         pixiv_json['illust']['meta_single_page']['original_image_url'])
+                        r = requests.get(pixiv_json['illust']['meta_single_page']['original_image_url'].replace('i.pximg.net','i.pixiv.cat'))
                     except:
-                        r = requests.get('https://daidr.me/imageProxy/?url=' +
-                                         pixiv_json['illust']['meta_pages'][pixiv_page - 1]['image_urls']['original'])
+                        r = requests.get(pixiv_json['illust']['meta_pages'][pixiv_page - 1]['image_urls']['original'].replace('i.pximg.net','i.pixiv.cat'))
                     with open("pixiv.jpg", "wb") as code:
                         code.write(r.content)
                     await context.edit('正在上传图片中 ...')
