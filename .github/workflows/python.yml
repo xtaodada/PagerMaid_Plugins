@@ -1,6 +1,9 @@
 name: Github commit to telegram
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
