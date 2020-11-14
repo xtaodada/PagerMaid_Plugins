@@ -329,6 +329,16 @@
             "supported": true,
             "des-short": "贴纸转图片",
             "des": "把别人发的贴纸转换成图片（只支持静态）。命令：pic。"
+        },
+        {
+            "name": "vip",
+            "version": "0.1",
+            "section": "chat",
+            "maintainer": "xtaodada",
+            "size": "4.0 kb",
+            "supported": true,
+            "des-short": "vip 捐赠用户功能",
+            "des": "命令：天气：weather 。"
         }
     ]
 }
