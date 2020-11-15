@@ -355,6 +355,8 @@ async def tx_t(context):
     reply = await context.get_reply_message()
     message = context.arguments
     lang = 'zh'
+    USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
+    headers = {"user-agent": USER_AGENT}
     if message:
         pass
     elif reply:
@@ -366,7 +368,7 @@ async def tx_t(context):
     try:
         await context.edit("正在生成翻译中 . . .")
         tx_json = json.loads(requests.get(
-        "http://xtaolink.cn/git/m/t.php?lang=" + lang + '&text=' + clear_emojis(message)).content.decode(
+        "https://xtaolink.cn/git/m/t.php?lang=" + lang + '&text=' + clear_emojis(message), headers=headers).content.decode(
         "utf-8"))
         if not tx_json['msg'] == 'ok':
             context.edit("出错了呜呜呜 ~ 翻译出错")
