@@ -92,10 +92,10 @@
         },
         {
             "name": "rate",
-            "version": "1.1",
+            "version": "1.2",
             "section": "daily",
             "maintainer": "fruitymelon",
-            "size": "1.7 kb",
+            "size": "1.8 kb",
             "supported": true,
             "des-short": "汇率转换。",
             "des": "这个人很懒，什么都没有留下。"
