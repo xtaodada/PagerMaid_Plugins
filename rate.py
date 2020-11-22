@@ -46,7 +46,10 @@ async def rate(context):
         return
     FROM = context.parameter[0].upper().strip()
     TO = context.parameter[1].upper().strip()
-    NB = float(context.parameter[2])
+    try:
+        NB = float(context.parameter[2].strip())
+    except:
+        NB = 1.0
     if currencies.count(FROM) == 0:
         await context.edit(
             f"{FROM}不是支持的货币. \n\n支持货币: \n{', '.join(currencies)}")
