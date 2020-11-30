@@ -21,25 +21,25 @@ async def mz(context):
             elif website == 2:
                 img = get("https://api.66mz8.com/api/rand.tbimg.php")
             elif website == 3:
-                img = get("https://api.isoyu.com/mm_images.php")
+                img = get("https://api.nmb.show/xiaojiejie2.php")
             elif website == 4:
                 img = get("https://uploadbeta.com/api/pictures/random/?key=%E5%A5%B3")
             elif website == 5:
-                img = get("https://uploadbeta.com/api/pictures/random/?key=%E5%A6%B9%E5%AD%90")
+                img = get("https://uploadbeta.com/api/pictures/random/?key=%E5%86%85%E8%A1%A3")
             elif website == 6:
                 img = get("https://uploadbeta.com/api/pictures/random/?key=%E6%8E%A8%E5%A5%B3%E9%83%8E")
             elif website == 7:
-                img = get("https://uploadbeta.com/api/pictures/random/?key=%E7%BE%8E%E5%A5%B3")
+                img = get("https://tvv.tw/xjj/meinv/img-ct.php")
             elif website == 8:
                 img = get("https://api.diskgirl.com/image/api.php?t=xinggan&v=" + str(random.uniform(0, 100)))
             elif website == 9:
                 img = get("https://api.lyiqk.cn/sexylady")
             elif website == 10:
-                img = get("https://api.pingping6.com/tools/acg3/index.php")
+                img = get("https://tvv.tw/xjj/meinv/img.php")
             elif website == 11:
                 img = get("https://api.uomg.com/api/rand.img3")
             elif website == 12:
-                img = get("https://api.diskgirl.com/image/api.php?t=&v=0.9451485087333713")
+                img = get("https://api.nmb.show/xiaojiejie1.php")
             elif website == 13:
                 img = get("https://uploadbeta.com/api/pictures/random/?key=%E6%80%A7%E6%84%9F")
             if img.status_code == 200:
