@@ -8,7 +8,7 @@ push_content['chat_id'] = '-1001441461877'
 push_content['disable_web_page_preview'] = 'True'
 push_content['parse_mode'] = 'markdown'
 push_content['text'] = "#更新日志 #" + main['commit']['author'][
-            'name'] + ' \n\n🔨 [' + main['sha'][0:7] + '](https://github.com/xtaodada/PagerMaid_Plugins/compare/' + \
+            'name'].replace('_', '') + ' \n\n🔨 [' + main['sha'][0:7] + '](https://github.com/xtaodada/PagerMaid_Plugins/compare/' + \
                                main[
                                    'sha'] + '): ' + main['commit']['message']
 url = 'https://api.telegram.org/bot' + token + '/sendMessage'

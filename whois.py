@@ -16,8 +16,8 @@ async def whois(context):
         return
     req = get("https://tenapi.cn/whois/?url=" + message)
     if req.status_code == 200:
-        data = json.loads(req.text)
-        res = 'url： ' + data['data']['url'] + '\n注册商： ' + str(data['data']['注册商']) + '\n联系人： ' + str(data['data']['联系人']) + '\n联系邮箱： ' + str(data['data']['联系邮箱']) + '\n注册时间： ' + str(data['data']['注册时间']) + '\n过期时间： ' + str(data['data']['过期时间']) + '\nDNS： ' + str(data['data']['DNS'])
+        data = json.loads(req.text)['data']
+        res = '域名： `' + data['url'] + '`\n注册商： `' + str(data['registrar']) + '`\n联系人： `' + str(data['registrant']) + '`\n联系邮箱： `' + str(data['mail']) + '`\n注册时间： `' + str(data['registration']) + '`\n过期时间： `' + str(data['expiration']) + '`\nDNS： ' + str(data['dns']).replace('<br/>', '\n')
         await context.edit(res)
     else:
         await context.edit("出错了呜呜呜 ~ 无法访问到 API 服务器 。")

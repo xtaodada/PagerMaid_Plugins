@@ -1,6 +1,6 @@
 """ Pagermaid plugin base. """
 import json, requests, re
-from googletrans import Translator
+from translate import Translator as trans
 from urllib.parse import urlparse
 from pagermaid import bot, log
 from pagermaid.listener import listener, config
@@ -59,8 +59,7 @@ async def admin(context):
           description="查询维基百科词条",
           parameters="<词组>")
 async def wiki(context):
-    translator = Translator()
-    lang = config['application_language']
+    lang = config['application_language'].replace('zh-cn', 'zh')
     await context.edit("获取中 . . .")
     try:
         message = await obtain_message(context)
@@ -79,8 +78,10 @@ async def wiki(context):
         wiki_time = wiki_json['query']['search'][0]['timestamp'].replace('T', ' ').replace('Z', ' ')
         try:
             await context.edit("正在生成翻译中 . . .")
-            wiki_content = translator.translate(clear_emojis(wiki_content), dest=lang)
-            message = '词条： [' + wiki_title + '](https://zh.wikipedia.org/zh-cn/' + wiki_title + ')\n\n' + wiki_content.text + '...\n\n此词条最后修订于 ' + wiki_time
+            USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
+            headers = {"user-agent": USER_AGENT}
+            wiki_content = json.loads(requests.get("https://xtaolink.cn/git/m/t.php?lang=" + lang + '&text=' + clear_emojis(wiki_content), headers=headers).content.decode("utf-8"))['data']['target_text']
+            message = '词条： [' + wiki_title + '](https://zh.wikipedia.org/zh-cn/' + wiki_title + ')\n\n' + wiki_content + '...\n\n此词条最后修订于 ' + wiki_time
         except ValueError:
             await context.edit("出错了呜呜呜 ~ 找不到目标语言，请更正配置文件中的错误。")
             return
@@ -355,6 +356,8 @@ async def tx_t(context):
     reply = await context.get_reply_message()
     message = context.arguments
     lang = 'zh'
+    USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
+    headers = {"user-agent": USER_AGENT}
     if message:
         pass
     elif reply:
@@ -366,7 +369,7 @@ async def tx_t(context):
     try:
         await context.edit("正在生成翻译中 . . .")
         tx_json = json.loads(requests.get(
-        "http://xtaolink.cn/git/m/t.php?lang=" + lang + '&text=' + clear_emojis(message)).content.decode(
+        "https://xtaolink.cn/git/m/t.php?lang=" + lang + '&text=' + clear_emojis(message), headers=headers).content.decode(
         "utf-8"))
         if not tx_json['msg'] == 'ok':
             context.edit("出错了呜呜呜 ~ 翻译出错")

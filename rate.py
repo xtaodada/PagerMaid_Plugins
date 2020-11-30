@@ -32,25 +32,29 @@ init()
 
 
 @listener(is_plugin=True, outgoing=True, command="rate",
-          description="Currency exchange rate plugin.",
-          parameters="<FROM> <TO>")
+          description="货币汇率插件",
+          parameters="<FROM> <TO> <NB>")
 async def rate(context):
     while not inited:
         await asyncio.sleep(1)
     if not context.parameter:
         await context.edit(
-            f"This is the currency exchange rate plugin.\n\nUsage: `-rate <FROM> <TO>`\n\nAvailable currencies: {', '.join(currencies)}")
+            f"这是货币汇率插件\n\n使用方法: `-rate <FROM> <TO> <NB>`\n\n支持货币: \n{', '.join(currencies)}")
         return
-    if len(context.parameter) != 2:
-        await context.edit(f"Usage: `-rate <FROM> <TO>`\n\n`{', '.join(currencies)}`")
+    if len(context.parameter) != 3:
+        await context.edit(f"使用方法: `-rate <FROM> <TO> <NB>`\n\n支持货币: \n{', '.join(currencies)}")
         return
     FROM = context.parameter[0].upper().strip()
     TO = context.parameter[1].upper().strip()
+    try:
+        NB = float(context.parameter[2].strip())
+    except:
+        NB = 1.0
     if currencies.count(FROM) == 0:
         await context.edit(
-            f"Currency type {FROM} is not supported. Choose one among `{', '.join(currencies)}` instead.")
+            f"{FROM}不是支持的货币. \n\n支持货币: \n{', '.join(currencies)}")
         return
     if currencies.count(TO) == 0:
-        await context.edit(f"Currency type {TO} is not supported. Choose one among `{', '.join(currencies)}` instead.")
+        await context.edit(f"{TO}不是支持的货币. \n\n支持货币: \n{', '.join(currencies)}")
         return
-    await context.edit(f'{FROM} : {TO} = 1 : {int(10000*data["rates"][TO]/data["rates"][FROM])/10000}')
+    await context.edit(f'{FROM} : {TO} = {NB} : {round(data["rates"][TO]/data["rates"][FROM]*NB,2)}')

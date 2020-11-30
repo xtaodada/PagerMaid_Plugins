@@ -62,7 +62,7 @@
         },
         {
             "name": "xtao-some",
-            "version": "1.10",
+            "version": "1.11",
             "section": "daily",
             "maintainer": "xtaodada",
             "size": "18.8 kb",
@@ -92,10 +92,10 @@
         },
         {
             "name": "rate",
-            "version": "1.1",
+            "version": "1.2",
             "section": "daily",
             "maintainer": "fruitymelon",
-            "size": "1.7 kb",
+            "size": "1.8 kb",
             "supported": true,
             "des-short": "汇率转换。",
             "des": "这个人很懒，什么都没有留下。"
@@ -152,13 +152,13 @@
         },
         {
             "name": "portball",
-            "version": "1.3",
+            "version": "1.41",
             "section": "chat",
             "maintainer": "Pentacene",
-            "size": "3.6 kb",
+            "size": "4.3 kb",
             "supported": true,
             "des-short": "回复你要临时禁言的人的消息来实现XX秒的禁言。",
-            "des": "portball 原因 秒数"
+            "des": "portball <原因> <秒数>"
         },
         {
             "name": "resou",
@@ -192,7 +192,7 @@
         },
         {
             "name": "whois",
-            "version": "1.0",
+            "version": "1.11",
             "section": "daily",
             "maintainer": "KorenKrita",
             "size": "1.1 kb",
@@ -329,6 +329,26 @@
             "supported": true,
             "des-short": "贴纸转图片",
             "des": "把别人发的贴纸转换成图片（只支持静态）。命令：pic。"
+        },
+        {
+            "name": "vip",
+            "version": "0.1",
+            "section": "chat",
+            "maintainer": "xtaodada",
+            "size": "4.0 kb",
+            "supported": true,
+            "des-short": "vip 捐赠用户功能",
+            "des": "命令：天气：weather 。"
+        },
+        {
+            "name": "calculator",
+            "version": "1.01",
+            "section": "chat",
+            "maintainer": "Pentacene",
+            "size": "1.0 kb",
+            "supported": true,
+            "des-short": "小型计算器",
+            "des": "/cal 6+4。"
         }
     ]
 }
