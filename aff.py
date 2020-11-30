@@ -10,7 +10,7 @@ from pagermaid.listener import listener
 async def aff(context):
     if not context.parameter: #发送aff信息
         try:
-            with open("plugins/AffExtra/aff.txt", "r") as f:
+            with open("plugins/AffExtra/aff.txt", "r", encoding="UTF-8") as f:
                 msg = f.read()
         except:
             msg = ""
@@ -31,7 +31,7 @@ async def aff(context):
         msg = reply.message
         if not exists("plugins/AffExtra"):
             mkdir("plugins/AffExtra")
-        with open("plugins/AffExtra/aff.txt", "w") as f:
+        with open("plugins/AffExtra/aff.txt", "w", encoding="UTF-8") as f:
             f.write(msg)
         await context.edit("好耶 ！ Aff信息保存成功。")
         sleep(3)
