@@ -359,6 +359,16 @@
             "supported": true,
             "des-short": "一键跑路（删所有消息并禁言）",
             "des": "paolu。"
+        },
+        {
+            "name": "keyword",
+            "version": "1.00",
+            "section": "chat",
+            "maintainer": "c3b2a",
+            "size": "11.9 kb",
+            "supported": true,
+            "des-short": "群组关键词自动回复插件",
+            "des": "keyword, replyset。"
         }
     ]
 }
