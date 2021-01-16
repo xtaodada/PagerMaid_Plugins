@@ -62,13 +62,13 @@
         },
         {
             "name": "xtao-some",
-            "version": "1.11",
+            "version": "1.12",
             "section": "daily",
             "maintainer": "xtaodada",
             "size": "18.8 kb",
             "supported": true,
             "des-short": "一大堆便民功能。",
-            "des": "超多功能 例如 -ip -pixiv -guess 等。"
+            "des": "超多功能 例如 -ip -ipping -guess 等。"
         },
         {
             "name": "yb-dl",
@@ -332,13 +332,13 @@
         },
         {
             "name": "vip",
-            "version": "0.1",
+            "version": "0.2",
             "section": "chat",
             "maintainer": "xtaodada",
             "size": "4.0 kb",
             "supported": true,
             "des-short": "vip 捐赠用户功能",
-            "des": "命令：天气：weather 。"
+            "des": "命令：天气：weather Pixiv：pixiv。"
         },
         {
             "name": "calculator",
