@@ -1,4 +1,5 @@
-import re, time, uuid
+import re, time, asyncio
+from uuid import uuid4
 from base64 import b64encode, b64decode
 from pagermaid import bot, redis, log, redis_status
 from pagermaid.listener import listener
@@ -20,7 +21,7 @@ def decode(s: str):
     return str(b64decode(s.encode('utf-8')), 'utf-8')
 
 def random_str():
-    return str(uuid.uuid4()).replace('-', '')
+    return str(uuid4()).replace('-', '')
 
 def parse_rules(rules: str):
     n_rules = {}
@@ -56,16 +57,22 @@ def get_redis(db_key: str):
     byte_data = str(byte_data, "ascii")
     return parse_rules(byte_data)
 
+async def del_msg(context, t_lim):
+    await asyncio.sleep(t_lim)
+    await context.delete()
+
 @listener(is_plugin=True, outgoing=True, command="keyword",
-          description="关键词自动回复。",
+          description="关键词自动回复",
           parameters="``new <plain|regex> '<规则>' '<回复信息>'` 或者 `del <plain|regex> '<规则>'` 或者 `list` 或者 `clear <plain|regex>")
 async def reply(context):
     if not redis_status():
-        await context.edit("出错了呜呜呜 ~ Redis 离线，无法运行。")
+        await context.edit("出错了呜呜呜 ~ Redis 离线，无法运行")
+        await del_msg(context, 5)
         return
     chat_id = context.chat_id
     if chat_id > 0:
         await context.edit("请在群组中使用")
+        await del_msg(context, 5)
         return
     plain_dict = get_redis(f"keyword.{chat_id}.plain")
     regex_dict = get_redis(f"keyword.{chat_id}.regex")
@@ -80,6 +87,7 @@ async def reply(context):
             parse.append(tmp_parse[i])
     if len(parse) == 0 or (len(parse[0].split()) == 1 and parse[0].split()[0] in ("new", "del", "clear")) or len(parse[0].split()) > 2:
         await context.edit("[Code: -1] 格式错误，格式为 `-keyword` 加上 `new <plain|regex> '<规则>' '<回复信息>'` 或者 `del <plain|regex> '<规则>'` 或者 `list` 或者 `clear <plain|regex>`")
+        await del_msg(context, 10)
         return
     else: parse[0] = parse[0].split()
     if parse[0][0] == "new" and len(parse) == 3:
@@ -91,8 +99,10 @@ async def reply(context):
             redis.set(f"keyword.{chat_id}.regex", save_rules(regex_dict, placeholder))
         else:
             await context.edit("格式错误，格式为 `-keyword` 加上 `new <plain|regex> '<规则>' '<回复信息>'` 或者 `del <plain|regex> '<规则>'` 或者 `list` 或者 `clear <plain|regex>`")
+            await del_msg(context, 10)
             return
         await context.edit("设置成功")
+        await del_msg(context, 5)
     elif parse[0][0] == "del" and len(parse) == 2:
         if parse[0][1] == "plain":
             if parse[1] in plain_dict: 
@@ -100,6 +110,7 @@ async def reply(context):
                 redis.set(f"keyword.{chat_id}.plain", save_rules(plain_dict, placeholder))
             else:
                 await context.edit("规则不存在")
+                await del_msg(context, 5)
                 return
         elif parse[0][1] == "regex":
             if parse[1] in regex_dict: 
@@ -107,11 +118,14 @@ async def reply(context):
                 redis.set(f"keyword.{chat_id}.regex", save_rules(regex_dict, placeholder))
             else:
                 await context.edit("规则不存在")
+                await del_msg(context, 5)
                 return
         else:
             await context.edit("格式错误，格式为 -keyword 加上 new <plain|regex> '<规则>' '<回复信息>' 或者 del <plain|regex> '<规则>' 或者 list 或者 clear <plain|regex>")
+            await del_msg(context, 10)
             return
         await context.edit("删除成功")
+        await del_msg(context, 5)
     elif parse[0][0] == "list" and len(parse) == 1:
         plain_msg = "Plain: \n"
         for k, v in plain_dict.items():
@@ -127,22 +141,27 @@ async def reply(context):
             redis.set(f"keyword.{chat_id}.regex", "")
         else:
             await context.edit("参数错误")
+            await del_msg(context, 5)
             return
         await context.edit("清除成功")
+        await del_msg(context, 5)
     else:
         await context.edit("[Code -2] 格式错误，格式为 `-keyword` 加上 `new <plain|regex> '<规则>' '<回复信息>'` 或者 `del <plain|regex> '<规则>'` 或者 `list` 或者 `clear <plain|regex>`")
+        await del_msg(context, 10)
         return
 
 @listener(outgoing=True, command="replyset",
-          description="自动回复设置。",
+          description="自动回复设置",
           parameters="help")
 async def reply_set(context):
     if not redis_status():
-        await context.edit("出错了呜呜呜 ~ Redis 离线，无法运行。")
+        await context.edit("出错了呜呜呜 ~ Redis 离线，无法运行")
+        await del_msg(context, 5)
         return
     chat_id = context.chat_id
     if chat_id > 0:
         await context.edit("请在群组中使用")
+        await del_msg(context, 5)
         return
     params = context.parameter
     is_global = len(params) >= 1 and params[0] == "global"
@@ -154,6 +173,7 @@ async def reply_set(context):
     cmd_dict = {"help": (1, ), "mode": (2, ), "list": (2, 3), "show": (1, ), "clear": (1, )}
     if len(params) < 1:
         await context.edit("参数错误")
+        await del_msg(context, 5)
         return
     if params[0] in cmd_list and len(params) in cmd_dict[params[0]]:
         if params[0] == "help":
@@ -163,6 +183,7 @@ async def reply_set(context):
 `-replyset mode <0/1/clear>` ( 0 表示黑名单，1 表示白名单 ) 或
 `-replyset list <add/del/show/clear> [user_id]`。
 在 `-replyset` 后面加上 `global` 即为全局设置''')
+            await del_msg(context, 15)
             return
         elif params[0] == "show":
             defaults = {"mode": "0", "list": "无"}
@@ -177,14 +198,17 @@ async def reply_set(context):
                 redis.set(redis_data, save_rules(settings_dict, None))
                 if params[1] == "0": await context.edit("模式已更改为黑名单")
                 elif params[1] == "1": await context.edit("模式已更改为白名单")
+                await del_msg(context, 5)
                 return
             elif params[1] == "clear":
                 if "mode" in settings_dict: del settings_dict["mode"]
                 redis.set(redis_data, save_rules(settings_dict, None))
                 await context.edit("清除成功")
+                await del_msg(context, 5)
                 return
             else:
                 await context.edit("参数错误")
+                await del_msg(context, 5)
                 return
         elif params[0] == "list":
             if params[1] == "show" and len(params) == 2:
@@ -197,6 +221,7 @@ async def reply_set(context):
                     return
                 else:
                     await context.edit("列表为空")
+                    await del_msg(context, 5)
                     return
             elif params[1] == "add" and len(params) == 3:
                 if is_num(params[2]):
@@ -205,9 +230,11 @@ async def reply_set(context):
                     else: settings_dict["list"] += f",{params[2]}"
                     redis.set(redis_data, save_rules(settings_dict, None))
                     await context.edit("添加成功")
+                    await del_msg(context, 5)
                     return
                 else:
                     await context.edit("user_id 需为整数")
+                    await del_msg(context, 5)
                     return
             elif params[1] == "del" and len(params) == 3:
                 if is_num(params[2]):
@@ -219,30 +246,38 @@ async def reply_set(context):
                             settings_dict["list"] = ",".join(user_list)
                             redis.set(redis_data, save_rules(settings_dict, None))
                             await context.edit("删除成功")
+                            await del_msg(context, 5)
                             return
                         else:
                             await context.edit("user_id 不在列表")
+                            await del_msg(context, 5)
                             return
                     else:
                         await context.edit("列表为空")
+                        await del_msg(context, 5)
                         return
                 else:
                     await context.edit("user_id 需为整数")
+                    await del_msg(context, 5)
                     return
             elif params[1] == "clear" and len(params) == 2:
                 if "list" in settings_dict: del settings_dict["list"]
                 redis.set(redis_data, save_rules(settings_dict, None))
                 await context.edit("清除成功")
+                await del_msg(context, 5)
                 return
             else:
                 await context.edit("参数错误")
+                await del_msg(context, 5)
                 return
         elif params[0] == "clear":
             redis.delete(redis_data)
             await context.edit("清除成功")
+            await del_msg(context, 5)
             return
     else:
         await context.edit("参数错误")
+        await del_msg(context, 5)
         return
     
 
