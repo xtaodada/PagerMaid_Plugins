@@ -1,4 +1,5 @@
-import re, time, asyncio
+import re, time, asyncio, requests
+from os import path, mkdir, remove
 from uuid import uuid4
 from base64 import b64encode, b64decode
 from pagermaid import bot, redis, log, redis_status
@@ -57,9 +58,43 @@ def get_redis(db_key: str):
     byte_data = str(byte_data, "ascii")
     return parse_rules(byte_data)
 
+def parse_multi(rule: str):
+    sep_ph = random_str()
+    col_ph = random_str()
+    rule = rule.replace(r"\||", sep_ph)
+    rule = rule.replace(r"\::", col_ph)
+    rule = rule.split("||")
+    n_rule = []
+    for r in rule:
+        p = r.split("::")
+        p = [i.replace(sep_ph, "||") for i in p]
+        p = [i.replace(col_ph, "::") for i in p]
+        data = ['plain', '']
+        if len(p) == 2: data = p
+        else: data[1] = p[0]
+        n_rule.append(data)
+    return n_rule
+
 async def del_msg(context, t_lim):
     await asyncio.sleep(t_lim)
     await context.delete()
+
+async def send_reply(chat_id, reply_msg, context):
+    for re_type, re_msg in reply_msg:
+        if re_type == "plain":
+            await bot.send_message(chat_id, re_msg)
+        elif re_type == "file" and len(re_msg.split()) >= 2:
+            if not path.exists("/tmp"): mkdir("/tmp")
+            re_data = re_msg.split()
+            file_name = "/tmp/" + re_data[0]
+            file_get = requests.get(" ".join(re_data[1: ]))
+            with open(file_name, "wb") as f:
+                f.write(file_get.content)
+            await bot.send_file(chat_id, file_name)
+            remove(file_name)
+        elif re_type == "op":
+            if re_msg == "delete":
+                await context.delete()
 
 @listener(is_plugin=True, outgoing=True, command="keyword",
           description="关键词自动回复",
@@ -301,14 +336,15 @@ async def auto_reply(context):
         elif g_mode or n_mode: mode = g_mode if g_mode else n_mode
         if g_list and n_list: user_list = n_list
         elif g_list or n_list: user_list = g_list if g_list else n_list
+        send_text = context.text
         for k, v in plain_dict.items():
-            if k in context.text and time.time() - last_time > msg_rate:
+            if k in send_text and time.time() - last_time > msg_rate:
                 if validate(str(sender_id), int(mode), user_list):
                     last_time = time.time()
-                    await bot.send_message(chat_id, v)
+                    await send_reply(chat_id, parse_multi(v), context)
         for k, v in regex_dict.items():
             pattern = re.compile(k)
-            if pattern.search(context.text) and time.time() - last_time > msg_rate:
+            if pattern.search(send_text) and time.time() - last_time > msg_rate:
                 if validate(str(sender_id), int(mode), user_list):
                     last_time = time.time()
-                    await bot.send_message(chat_id, v)
+                    await send_reply(chat_id, parse_multi(v), context)
