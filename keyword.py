@@ -352,7 +352,7 @@ async def auto_reply(context):
         n_mode = n_settings.get("mode", None)
         mode = "0"
         g_list = g_settings.get("list", None)
-        n_list = g_settings.get("list", None)
+        n_list = n_settings.get("list", None)
         user_list = []
         if g_mode and n_mode: mode = n_mode
         elif g_mode or n_mode: mode = g_mode if g_mode else n_mode
@@ -370,10 +370,13 @@ async def auto_reply(context):
                 if validate(str(sender_id), int(mode), user_list):
                     last_time = time.time()
                     catch_pattern = r"\$\{regex_(?P<str>((?!\}).)+)\}"
-                    while re.search(catch_pattern, v):
+                    count = 0
+                    while re.search(catch_pattern, v) and count < 20:
                         search_data = re.search(k, send_text)
                         group_name = re.search(catch_pattern, v).group("str")
                         capture_data = get_capture(search_data, group_name)
                         if not capture_data: capture_data = ""
+                        if re.search(catch_pattern, capture_data): capture_data = ""
                         v = v.replace("${regex_%s}" % group_name, capture_data)
+                        count += 1
                     await send_reply(chat_id, parse_multi(v), context)
