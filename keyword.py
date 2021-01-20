@@ -245,7 +245,7 @@ async def reply_set(context):
             await del_msg(context, 15)
             return
         elif params[0] == "show":
-            defaults = {"mode": "0", "list": "无"}
+            defaults = {"mode": "未设置", "list": "未设置"}
             msg = "Settings: \n"
             for k, v in defaults.items():
                 msg += f"`{k}` -> `{settings_dict[k] if k in settings_dict else v}`\n"
