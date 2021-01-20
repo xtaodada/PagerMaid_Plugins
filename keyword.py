@@ -101,6 +101,8 @@ async def send_reply(chat_id, reply_msg, context):
             re_msg = re_msg.replace(f"${k}", str(v))
         if re_type == "plain":
             await bot.send_message(chat_id, re_msg)
+        elif re_type == "reply":
+            await bot.send_message(chat_id, re_msg, reply_to = context.id)
         elif re_type == "file" and len(re_msg.split()) >= 2:
             if not path.exists("/tmp"): mkdir("/tmp")
             re_data = re_msg.split()
