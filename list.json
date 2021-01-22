@@ -372,12 +372,12 @@
         },
         {
             "name": "msgst",
-            "version": "1.0",
+            "version": "1.1",
             "section": "chat",
             "maintainer": "c3b2a",
-            "size": "3.0 kb",
+            "size": "3.1 kb",
             "supported": true,
-            "des-short": "消息每天定时发送",
+            "des-short": "每天定时发送消息",
             "des": "命令: msgst, msgset。"
         }
     ]
