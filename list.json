@@ -369,6 +369,16 @@
             "supported": true,
             "des-short": "群组关键词自动回复插件",
             "des": "命令: keyword, replyset。"
+        },
+        {
+            "name": "msgst",
+            "version": "1.0",
+            "section": "chat",
+            "maintainer": "c3b2a",
+            "size": "3.0 kb",
+            "supported": true,
+            "des-short": "消息每天定时发送",
+            "des": "命令: msgst, msgset。"
         }
     ]
 }
