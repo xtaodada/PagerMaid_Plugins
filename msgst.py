@@ -1,4 +1,4 @@
-import asyncio
+import time, asyncio
 from pagermaid import bot, redis, redis_status
 from pagermaid.listener import listener
 
@@ -24,7 +24,7 @@ async def del_msg(context, t_lim):
 
 @listener(is_plugin=True, outgoing=True, command="msgst",
           description="消息每天定时发送",
-          parameters="new <time> <text>` 或 `del <msg_id>` 或 `list")
+          parameters="new 时:分:秒 消息` 或 `del <msg_id>` 或 `list")
 async def process(context):
     params = []
     for p in context.parameter:
@@ -78,4 +78,6 @@ async def sendmsg(context):
         if parse[0] == "send_msg":
             async with bot.conversation(bot_data[1]) as conversation:
                 await bot.send_read_acknowledge(conversation.chat_id)
+            s_time = int(time.time() + 1) - time.time()
+            await asyncio.sleep(s_time)
             await bot.send_message(int(parse[1]), "|".join(parse[2:]))
