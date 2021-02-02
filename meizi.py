@@ -10,38 +10,14 @@ from os import remove
 async def mz(context):
     await context.edit("获取中 . . .")
     status = False
-    for _ in range (20): #最多重试20次
-        website = random.randint(0, 13)
+    for _ in range (5): #最多重试5次
+        website = 0
         filename = "mz" + str(random.random())[2:] + ".png"
         try:
             if website == 0:
-                img = get("https://mm.52.mk/img")
+                img = get("https://api.lyiqk.cn/purelady")
             elif website == 1:
-                img = get("https://api.helloworld.la/xiezhen_xinggan.php")
-            elif website == 2:
-                img = get("https://api.66mz8.com/api/rand.tbimg.php")
-            elif website == 3:
-                img = get("https://api.nmb.show/xiaojiejie2.php")
-            elif website == 4:
-                img = get("https://uploadbeta.com/api/pictures/random/?key=%E5%A5%B3")
-            elif website == 5:
-                img = get("https://uploadbeta.com/api/pictures/random/?key=%E5%86%85%E8%A1%A3")
-            elif website == 6:
-                img = get("https://uploadbeta.com/api/pictures/random/?key=%E6%8E%A8%E5%A5%B3%E9%83%8E")
-            elif website == 7:
-                img = get("https://tvv.tw/xjj/meinv/img-ct.php")
-            elif website == 8:
-                img = get("https://api.diskgirl.com/image/api.php?t=xinggan&v=" + str(random.uniform(0, 100)))
-            elif website == 9:
                 img = get("https://api.lyiqk.cn/sexylady")
-            elif website == 10:
-                img = get("https://tvv.tw/xjj/meinv/img.php")
-            elif website == 11:
-                img = get("https://api.uomg.com/api/rand.img3")
-            elif website == 12:
-                img = get("https://api.nmb.show/xiaojiejie1.php")
-            elif website == 13:
-                img = get("https://uploadbeta.com/api/pictures/random/?key=%E6%80%A7%E6%84%9F")
             if img.status_code == 200:
                 with open(filename, 'wb') as f:
                     f.write(img.content)
