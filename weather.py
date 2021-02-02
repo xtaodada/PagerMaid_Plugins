@@ -1,4 +1,5 @@
 import json
+import time
 from requests import get
 from pagermaid.listener import listener
 from pagermaid.utils import obtain_message
@@ -24,6 +25,15 @@ icons = {
     "50n": "🌫",
 }
 
+def timestamp_to_time(timestamp):
+    timeArray = time.localtime(timestamp)
+    timeReturn = time.strftime("%H:%M",timeArray)
+    return timeReturn
+def calcWindDirection(windDirection):
+    dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
+    ix = round(windDirection / (360. / len(dirs)))
+    return dirs[ix % len(dirs)]
+
 @listener(is_plugin=True, outgoing=True, command="weather",
           description="查询天气",
           parameters="<城市>")
@@ -38,12 +48,23 @@ async def weather(context):
     if req.status_code == 200:
         data = json.loads(req.text)
         cityName = "{}, {}".format(data["name"], data["sys"]["country"])
+        temp_Max = round(data["main"]["temp_max"], 2)
+        temp_Min = round(data["main"]["temp_min"], 2)
+        pressure = data["main"]["pressure"]
+        humidity = data["main"]["humidity"]
+        windSpeed = data["wind"]["speed"]
+        windDirection = calcWindDirection(data["wind"]["deg"])
+        sunriseTimeunix  = data["sys"]["sunrise"]
+        sunriseTime = timestamp_to_time(sunriseTimeunix)
+        sunsetTimeunix = data["sys"]["sunset"]
+        sunsetTime = timestamp_to_time(sunsetTimeunix)
+        fellsTemp = data["main"]["feels_like"]
         tempInC = round(data["main"]["temp"], 2)
         tempInF = round((1.8 * tempInC) + 32, 2)
         icon = data["weather"][0]["icon"]
         desc = data["weather"][0]["description"]
-        res = "{}\n🌡{}℃ ({}F)\n{} {}".format(
-            cityName, tempInC, tempInF, icons[icon], desc
+        res = "{} {}{} 💨{} {}m/s\n大气🌡 {}℃ ({}℉) 💦 {}% \n体感🌡 {}℃\n气压 {}hpa\n🌅{} 🌇{} ".format(
+            cityName, icons[icon], desc, windDirection, windSpeed, tempInC, tempInF, humidity, fellsTemp, pressure, sunriseTime, sunsetTime
         )
         await context.edit(res)
     else:
