@@ -11,57 +11,47 @@ from os import remove
 async def joke(context):
     await context.edit("获取中 . . .")
     status = False
-    for _ in range (20): #最多重试20次
+    for _ in range (5): #最多重试5次
         website = random.randint(0, 6)
-        filename = "acgm" + str(random.random())[2:] + ".png"
+        filename = str(random.random()) + ".png"
         try:
             if website == 0:
-                img = requests.get("http://api.btstu.cn/sjbz/?lx=m_dongman")
+                img = requests.get("https://api.lyiqk.cn/miku")
             elif website == 1:
-                img = requests.get("https://acg.yanwz.cn/api.php")
+                img = requests.get("https://api.lyiqk.cn/acgst")
             elif website == 2:
-                img = requests.get("https://img.xjh.me/random_img.php?type=bg&ctype=acg&return=302&device=mobile")
+                img = requests.get("https://img.catct.cn/pixiv.php")
             elif website == 3:
-                img = requests.get("https://www.yunboys.cn/sjbz/api.php?method=mobile&lx=dongman")
+                img = requests.get("https://acg.yanwz.cn/api.php")
             elif website == 4:
-                headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063','Referer':'https://osk.soloop.ooo/give_me_eropics-l/'}
-                img = requests.get("https://osk.soloop.ooo/rdm.php?"+ str(random.random()), headers=headers)
+                img = requests.get("https://acg.yanwz.cn/wallpaper/api.php")
             elif website == 5:
-                img = requests.get('https://api.lolicon.app/setu/?r18=0')
+                img = requests.get("https://api.ixiaowai.cn/mcapi/mcapi.php")
             if img.status_code == 200:
-                if website == 5:
+                if website == 6:
                     tmp = json.loads(img.content)
                     img = tmp['data'][0]['url']
                     img = requests.get(img)
                     if img.status_code != 200:
                         continue #如果返回不正常就赶紧下一回
                 with open(filename, 'wb') as f:
+                    await context.edit("上传中 . . .")
                     f.write(img.content)
-                await context.edit("上传中 . . .")
-                await context.client.send_file(context.chat_id,filename)
+                    await context.client.send_file(
+                        context.chat_id,
+                        filename,
+                        reply_to=None,
+                        caption=None
+                    )
+                try:
+                    remove(filename)
+                except:
+                    pass
                 status = True
                 break #成功了就赶紧结束啦！
         except:
-            try:
-                remove(filename)
-            except:
-                pass
             continue
-    try:
-        remove(filename)
-    except:
-        pass
-    try:
-        await context.delete()
-    except:
-        pass
     if not status:
-        try:
-            remove(filename)
-        except:
-            pass
-        try:
-            await context.delete()
-        except:
-            pass
-        await context.client.send_message(context.chat_id,"出错了呜呜呜 ~ 试了好多好多次都无法访问到服务器 。")
+        await context.edit("出错了呜呜呜 ~ 试了好多好多次都无法访问到 API 服务器 。")
+        sleep(2)
+    await context.delete()
