@@ -25,10 +25,9 @@ icons = {
     "50n": "🌫",
 }
 
-def timestamp_to_time(timestamp):
-    timeArray = datetime.datetime.fromtimestamp(timestamp)
-    timeReturn = timeArray.strftime("%H:%M")
-    return timeReturn
+def timestamp_to_time(timestamp, timeZoneShift):
+    timeArray = datetime.datetime.utcfromtimestamp(timestamp) + datetime.timedelta(seconds=timeZoneShift)
+    return timeArray.strftime("%H:%M")
 def calcWindDirection(windDirection):
     dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
     ix = round(windDirection / (360. / len(dirs)))
@@ -49,6 +48,7 @@ async def weather(context):
         if req.status_code == 200:
             data = json.loads(req.text)
             cityName = "{}, {}".format(data["name"], data["sys"]["country"])
+            timeZoneShift = data["timezone"]
             temp_Max = round(data["main"]["temp_max"], 2)
             temp_Min = round(data["main"]["temp_min"], 2)
             pressure = data["main"]["pressure"]
@@ -56,9 +56,9 @@ async def weather(context):
             windSpeed = data["wind"]["speed"]
             windDirection = calcWindDirection(data["wind"]["deg"])
             sunriseTimeunix  = data["sys"]["sunrise"]
-            sunriseTime = timestamp_to_time(sunriseTimeunix)
+            sunriseTime = timestamp_to_time(sunriseTimeunix, timeZoneShift)
             sunsetTimeunix = data["sys"]["sunset"]
-            sunsetTime = timestamp_to_time(sunsetTimeunix)
+            sunsetTime = timestamp_to_time(sunsetTimeunix, timeZoneShift)
             fellsTemp = data["main"]["feels_like"]
             tempInC = round(data["main"]["temp"], 2)
             tempInF = round((1.8 * tempInC) + 32, 2)
