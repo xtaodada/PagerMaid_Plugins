@@ -82,6 +82,16 @@ def get_capture(search_data, group_name):
     except:
         return None
 
+def get_rule(chat_id, rule_type, rule_index):
+    rule_index = int(rule_index)
+    rule_data = get_redis(f"keyword.{chat_id}.{rule_type}")
+    index = 0
+    for k, v in rule_data.items():
+        if index == rule_index:
+            return encode(k)
+        index += 1
+    return None
+
 async def del_msg(context, t_lim):
     await asyncio.sleep(t_lim)
     await context.delete()
@@ -164,7 +174,8 @@ async def reply(context):
         await del_msg(context, 5)
     elif parse[0][0] == "del" and len(parse) == 2:
         if parse[0][1] == "plain":
-            if parse[1] in plain_dict: 
+            if parse[1] in plain_dict:
+                redis.delete(f"keyword.{chat_id}.single.plain.{encode(parse[1])}")
                 plain_dict.pop(parse[1])
                 redis.set(f"keyword.{chat_id}.plain", save_rules(plain_dict, placeholder))
             else:
@@ -172,7 +183,8 @@ async def reply(context):
                 await del_msg(context, 5)
                 return
         elif parse[0][1] == "regex":
-            if parse[1] in regex_dict: 
+            if parse[1] in regex_dict:
+                redis.delete(f"keyword.{chat_id}.single.regex.{encode(parse[1])}")
                 regex_dict.pop(parse[1])
                 redis.set(f"keyword.{chat_id}.regex", save_rules(regex_dict, placeholder))
             else:
@@ -187,16 +199,24 @@ async def reply(context):
         await del_msg(context, 5)
     elif parse[0][0] == "list" and len(parse) == 1:
         plain_msg = "Plain: \n"
+        index = 0
         for k, v in plain_dict.items():
-            plain_msg += f"`{k}` -> `{v}`\n"
+            plain_msg += f"`{index}`: `{k}` -> `{v}`\n"
+            index += 1
         regex_msg = "Regex: \n"
+        index = 0
         for k, v in regex_dict.items():
-            regex_msg += f"`{k}` -> `{v}`\n"
+            regex_msg += f"`{index}`: `{k}` -> `{v}`\n"
+            index += 1
         await context.edit(plain_msg + "\n" + regex_msg)
     elif parse[0][0] == "clear" and len(parse) == 1:
         if parse[0][1] == "plain":
+            for k in plain_dict.keys():
+                redis.delete(f"keyword.{chat_id}.single.plain.{encode(k)}")
             redis.set(f"keyword.{chat_id}.plain", "")
         elif parse[0][1] == "regex":
+            for k in regex_dict.keys():
+                redis.delete(f"keyword.{chat_id}.single.regex.{encode(k)}")
             redis.set(f"keyword.{chat_id}.regex", "")
         else:
             await context.edit("参数错误")
@@ -223,10 +243,15 @@ async def reply_set(context):
         await del_msg(context, 5)
         return
     params = context.parameter
-    is_global = len(params) >= 1 and params[0] == "global"
-    redis_data = "keyword.settings" if is_global else f"keyword.{chat_id}.settings"
-    if is_global:
+    redis_data = f"keyword.{chat_id}.settings"
+    if len(params) >= 1 and params[0] == "global":
+        redis_data = "keyword.settings"
         del params[0]
+    elif len(params) >= 2 and params[0] in ("plain", "regex") and is_num(params[1]):
+        rule_data = get_rule(chat_id, params[0], params[1])
+        if rule_data:
+            redis_data = f"keyword.{chat_id}.single.{params[0]}.{rule_data}"
+            del params[0:2]
     settings_dict = get_redis(redis_data)
     cmd_list = ["help", "mode", "list", "show", "clear"]
     cmd_dict = {"help": (1, ), "mode": (2, ), "list": (2, 3), "show": (1, ), "clear": (1, )}
@@ -365,13 +390,21 @@ async def auto_reply(context):
         send_text = context.text
         for k, v in plain_dict.items():
             if k in send_text and time.time() - last_time > msg_rate:
-                if validate(str(sender_id), int(mode), user_list):
+                tmp = get_redis(f"keyword.{chat_id}.single.plain.{encode(k)}")
+                could_reply = validate(str(sender_id), int(mode), user_list)
+                if tmp:
+                    could_reply = validate(str(sender_id), int(tmp.get("mode", "0")), tmp.get("list", []))
+                if could_reply:
                     last_time = time.time()
                     await send_reply(chat_id, parse_multi(v), context)
         for k, v in regex_dict.items():
             pattern = re.compile(k)
             if pattern.search(send_text) and time.time() - last_time > msg_rate:
-                if validate(str(sender_id), int(mode), user_list):
+                tmp = get_redis(f"keyword.{chat_id}.single.regex.{encode(k)}")
+                could_reply = validate(str(sender_id), int(mode), user_list)
+                if tmp:
+                    could_reply = validate(str(sender_id), int(tmp.get("mode", "0")), tmp.get("list", []))
+                if could_reply:
                     last_time = time.time()
                     catch_pattern = r"\$\{regex_(?P<str>((?!\}).)+)\}"
                     count = 0
