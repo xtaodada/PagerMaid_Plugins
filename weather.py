@@ -1,5 +1,5 @@
 import json
-import time
+import datetime
 from requests import get
 from pagermaid.listener import listener
 from pagermaid.utils import obtain_message
@@ -26,8 +26,8 @@ icons = {
 }
 
 def timestamp_to_time(timestamp):
-    timeArray = time.localtime(timestamp)
-    timeReturn = time.strftime("%H:%M",timeArray)
+    timeArray = datetime.datetime.fromtimestamp(timestamp)
+    timeReturn = timeArray.strftime("%H:%M")
     return timeReturn
 def calcWindDirection(windDirection):
     dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
