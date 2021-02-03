@@ -197,8 +197,7 @@ async def ipping(context):
                 else:
                     url = url.path
                 pinginfo = requests.get(
-                    "https://helloacm.com/api/ping/?cached&host=" + url).content.decode(
-                    "utf-8")
+                    "https://steakovercooked.com/api/ping/?host=" + url).content.decode("utf-8")
                 if pinginfo == 'null':
                     pass
                 elif not pinginfo == 'null':
@@ -215,8 +214,7 @@ async def ipping(context):
                 await context.edit('没有找到要查询的 ip/域名 ...')
                 return True
             pinginfo = requests.get(
-                "https://helloacm.com/api/ping/?cached&host=" + url).content.decode(
-                "utf-8")
+                "https://steakovercooked.com/api/ping/?host=" + url).content.decode("utf-8")
             if pinginfo == 'null':
                 pass
             elif not pinginfo == 'null':
