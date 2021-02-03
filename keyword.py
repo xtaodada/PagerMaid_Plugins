@@ -5,7 +5,7 @@ from base64 import b64encode, b64decode
 from pagermaid import bot, redis, log, redis_status
 from pagermaid.listener import listener
 
-msg_rate = 1
+msg_rate = 0.01
 last_time = time.time()
 
 def is_num(x: str):
@@ -157,7 +157,7 @@ async def reply(context):
     for i in range(len(tmp_parse)):
         if len(tmp_parse[i].split()) != 0:
             parse.append(tmp_parse[i])
-    if len(parse) == 0 or (len(parse[0].split()) == 1 and parse[0].split()[0] in ("new", "del", "clear")) or len(parse[0].split()) > 2:
+    if len(parse) == 0 or (len(parse[0].split()) == 1 and parse[0].split()[0] in ("new", "del", "delid", "clear")) or len(parse[0].split()) > 2:
         await context.edit("[Code: -1] 格式错误，格式为 `-keyword` 加上 `new <plain|regex> '<规则>' '<回复信息>'` 或者 `del <plain|regex> '<规则>'` 或者 `list` 或者 `clear <plain|regex>`")
         await del_msg(context, 10)
         return
@@ -175,9 +175,12 @@ async def reply(context):
             return
         await context.edit("设置成功")
         await del_msg(context, 5)
-    elif parse[0][0] == "del" and len(parse) == 2:
+    elif parse[0][0] in ("del", "delid") and len(parse) == 2:
+        if parse[0][0] == "delid":
+            parse[1] = get_rule(chat_id, parse[0][1], parse[1])
+            if parse[1]: parse[1] = decode(parse[1])
         if parse[0][1] == "plain":
-            if parse[1] in plain_dict:
+            if parse[1] and parse[1] in plain_dict:
                 redis.delete(f"keyword.{chat_id}.single.plain.{encode(parse[1])}")
                 plain_dict.pop(parse[1])
                 redis.set(f"keyword.{chat_id}.plain", save_rules(plain_dict, placeholder))
@@ -186,7 +189,7 @@ async def reply(context):
                 await del_msg(context, 5)
                 return
         elif parse[0][1] == "regex":
-            if parse[1] in regex_dict:
+            if parse[1] and parse[1] in regex_dict:
                 redis.delete(f"keyword.{chat_id}.single.regex.{encode(parse[1])}")
                 regex_dict.pop(parse[1])
                 redis.set(f"keyword.{chat_id}.regex", save_rules(regex_dict, placeholder))
