@@ -52,10 +52,10 @@
         },
         {
             "name": "weather",
-            "version": "1.0",
+            "version": "1.1",
             "section": "daily",
             "maintainer": "xtaodada",
-            "size": "1.5 kb",
+            "size": "2.9 kb",
             "supported": true,
             "des-short": "查询天气。",
             "des": "这个人很懒，什么都没有留下。"
