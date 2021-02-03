@@ -5,8 +5,7 @@ from base64 import b64encode, b64decode
 from pagermaid import bot, redis, log, redis_status
 from pagermaid.listener import listener
 
-msg_rate = 0.01
-last_time = time.time()
+read_context = {}
 
 def is_num(x: str):
     try:
@@ -395,23 +394,25 @@ async def auto_reply(context):
         elif g_list or n_list: user_list = g_list if g_list else n_list
         send_text = context.text
         for k, v in plain_dict.items():
-            if k in send_text and time.time() - last_time > msg_rate:
+            if k in send_text and context.id not in read_context:
                 tmp = get_redis(f"keyword.{chat_id}.single.plain.{encode(k)}")
                 could_reply = validate(str(sender_id), int(mode), user_list)
                 if tmp:
                     could_reply = validate(str(sender_id), int(tmp.get("mode", "0")), tmp.get("list", []))
                 if could_reply:
-                    last_time = time.time()
+                    read_context[context.id] = None
                     await send_reply(chat_id, parse_multi(v), context)
+            elif context.id in read_context:
+                del read_context[context.id]
         for k, v in regex_dict.items():
             pattern = re.compile(k)
-            if pattern.search(send_text) and time.time() - last_time > msg_rate:
+            if pattern.search(send_text) and context.id not in read_context:
                 tmp = get_redis(f"keyword.{chat_id}.single.regex.{encode(k)}")
                 could_reply = validate(str(sender_id), int(mode), user_list)
                 if tmp:
                     could_reply = validate(str(sender_id), int(tmp.get("mode", "0")), tmp.get("list", []))
                 if could_reply:
-                    last_time = time.time()
+                    read_context[context.id] = None
                     catch_pattern = r"\$\{regex_(?P<str>((?!\}).)+)\}"
                     count = 0
                     while re.search(catch_pattern, v) and count < 20:
@@ -423,3 +424,5 @@ async def auto_reply(context):
                         v = v.replace("${regex_%s}" % group_name, capture_data)
                         count += 1
                     await send_reply(chat_id, parse_multi(v), context)
+            elif context.id in read_context:
+                del read_context[context.id]
