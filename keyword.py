@@ -374,7 +374,6 @@ async def reply_set(context):
 async def auto_reply(context):
     if not redis_status():
         return
-    global msg_rate, last_time
     chat_id = context.chat_id
     sender_id = context.sender_id
     if chat_id < 0:
@@ -402,8 +401,6 @@ async def auto_reply(context):
                 if could_reply:
                     read_context[context.id] = None
                     await send_reply(chat_id, parse_multi(v), context)
-            elif context.id in read_context:
-                del read_context[context.id]
         for k, v in regex_dict.items():
             pattern = re.compile(k)
             if pattern.search(send_text) and context.id not in read_context:
@@ -424,5 +421,5 @@ async def auto_reply(context):
                         v = v.replace("${regex_%s}" % group_name, capture_data)
                         count += 1
                     await send_reply(chat_id, parse_multi(v), context)
-            elif context.id in read_context:
-                del read_context[context.id]
+    if context.id in read_context:
+        del read_context[context.id]
