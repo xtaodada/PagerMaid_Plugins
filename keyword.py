@@ -96,13 +96,15 @@ def get_rule(chat_id, rule_type, rule_index):
 
 def valid_time(chat_id):
     global msg_freq, group_last_time
-    cus_rate = get_redis(f"keyword.{chat_id}.settings").get("freq", msg_freq)
-    if cus_rate and is_num(str(cus_rate, "ascii")):
-        msg_freq = float(cus_rate)
+    cus_freq = get_redis(f"keyword.{chat_id}.settings").get("freq", msg_freq)
+    try:
+        cus_freq = float(cus_freq)
+    except:
+        cus_freq = msg_freq
     n_time = time.time()
     chat_id = int(chat_id)
     if chat_id in group_last_time:
-        if n_time - group_last_time[chat_id] >= msg_freq:
+        if n_time - group_last_time[chat_id] >= cus_freq:
             return True
         else:
             return False
@@ -118,26 +120,41 @@ async def del_msg(context, t_lim):
 
 async def send_reply(chat_id, reply_msg, context):
     try:
+        real_chat_id = chat_id
         chat = context.chat
         sender = context.sender
-        replace_data = {
-            "user_id": sender.id,
-            "first_name": sender.first_name,
-            "last_name": sender.last_name if sender.last_name else "",
-            "chat_id": chat.id,
-            "chat_name": chat.title
-        }
+        replace_data = {}
+        if chat_id < 0:
+            replace_data = {
+                "user_id": sender.id,
+                "first_name": sender.first_name,
+                "last_name": sender.last_name if sender.last_name else "",
+                "chat_id": chat.id,
+                "chat_name": chat.title
+            }
+        else:
+            replace_data["user_id"] = chat_id
+            if sender:
+                replace_data["first_name"] = sender.first_name
+                replace_data["last_name"] = sender.last_name if sender.last_name else ""
+            if chat:
+                replace_data["chat_id"] = chat.id
+                replace_data["chat_name"] = chat.title
         update_last_time = False
         could_send_msg = valid_time(chat_id)
         for re_type, re_msg in reply_msg:
             for k, v in replace_data.items():
                 re_msg = re_msg.replace(f"${k}", str(v))
             type_parse = re_type.split(",")
+            for s in type_parse:
+                if len(s) >= 5 and "ext_" == s[0:4] and is_num(s[4:]):
+                    chat_id = int(s[4:])
+                    break
             if "plain" in type_parse:
                 if could_send_msg:
                     update_last_time = True
                     await bot.send_message(chat_id, re_msg, reply_to = None)
-            elif "reply" in type_parse:
+            elif "reply" in type_parse and chat_id == real_chat_id:
                 if could_send_msg:
                     update_last_time = True
                     await bot.send_message(chat_id, re_msg, reply_to = context.id)
@@ -166,6 +183,7 @@ async def send_reply(chat_id, reply_msg, context):
                     sleep_time = re_msg.split()[1]
                     if is_num(sleep_time):
                         await asyncio.sleep(int(sleep_time))
+            chat_id = real_chat_id
         if update_last_time:
             global group_last_time
             group_last_time[int(chat_id)] = time.time()
@@ -181,10 +199,6 @@ async def reply(context):
         await del_msg(context, 5)
         return
     chat_id = context.chat_id
-    if chat_id > 0:
-        await context.edit("请在群组中使用")
-        await del_msg(context, 5)
-        return
     plain_dict = get_redis(f"keyword.{chat_id}.plain")
     regex_dict = get_redis(f"keyword.{chat_id}.regex")
     params = context.parameter
@@ -285,10 +299,6 @@ async def reply_set(context):
         await del_msg(context, 5)
         return
     chat_id = context.chat_id
-    if chat_id > 0:
-        await context.edit("请在群组中使用")
-        await del_msg(context, 5)
-        return
     params = context.parameter
     redis_data = f"keyword.{chat_id}.settings"
     if len(params) >= 1 and params[0] == "global":
@@ -449,57 +459,56 @@ async def auto_reply(context):
         return
     chat_id = context.chat_id
     sender_id = context.sender_id
-    if chat_id < 0:
-        if context.id not in read_context:
-            plain_dict = get_redis(f"keyword.{chat_id}.plain")
-            regex_dict = get_redis(f"keyword.{chat_id}.regex")
-            g_settings = get_redis("keyword.settings")
-            n_settings = get_redis(f"keyword.{chat_id}.settings")
-            g_mode = g_settings.get("mode", None)
-            n_mode = n_settings.get("mode", None)
-            mode = "0"
-            g_list = g_settings.get("list", None)
-            n_list = n_settings.get("list", None)
-            user_list = []
-            if g_mode and n_mode:
-                mode = n_mode
-            elif g_mode or n_mode:
-                mode = g_mode if g_mode else n_mode
-            if g_list and n_list:
-                user_list = n_list
-            elif g_list or n_list:
-                user_list = g_list if g_list else n_list
-            send_text = context.text
-            for k, v in plain_dict.items():
-                if k in send_text:
-                    tmp = get_redis(f"keyword.{chat_id}.single.plain.{encode(k)}")
-                    could_reply = validate(str(sender_id), int(mode), user_list)
-                    if tmp:
-                        could_reply = validate(str(sender_id), int(tmp.get("mode", "0")), tmp.get("list", []))
-                    if could_reply:
-                        read_context[context.id] = None
-                        await send_reply(chat_id, parse_multi(v), context)
-            for k, v in regex_dict.items():
-                pattern = re.compile(k)
-                if pattern.search(send_text):
-                    tmp = get_redis(f"keyword.{chat_id}.single.regex.{encode(k)}")
-                    could_reply = validate(str(sender_id), int(mode), user_list)
-                    if tmp:
-                        could_reply = validate(str(sender_id), int(tmp.get("mode", "0")), tmp.get("list", []))
-                    if could_reply:
-                        read_context[context.id] = None
-                        catch_pattern = r"\$\{regex_(?P<str>((?!\}).)+)\}"
-                        count = 0
-                        while re.search(catch_pattern, v) and count < 20:
-                            search_data = re.search(k, send_text)
-                            group_name = re.search(catch_pattern, v).group("str")
-                            capture_data = get_capture(search_data, group_name)
-                            if not capture_data:
-                                capture_data = ""
-                            if re.search(catch_pattern, capture_data):
-                                capture_data = ""
-                            v = v.replace("${regex_%s}" % group_name, capture_data)
-                            count += 1
-                        await send_reply(chat_id, parse_multi(v), context)
-        else:
-            del read_context[context.id]
+    if context.id not in read_context:
+        plain_dict = get_redis(f"keyword.{chat_id}.plain")
+        regex_dict = get_redis(f"keyword.{chat_id}.regex")
+        g_settings = get_redis("keyword.settings")
+        n_settings = get_redis(f"keyword.{chat_id}.settings")
+        g_mode = g_settings.get("mode", None)
+        n_mode = n_settings.get("mode", None)
+        mode = "0"
+        g_list = g_settings.get("list", None)
+        n_list = n_settings.get("list", None)
+        user_list = []
+        if g_mode and n_mode:
+            mode = n_mode
+        elif g_mode or n_mode:
+            mode = g_mode if g_mode else n_mode
+        if g_list and n_list:
+            user_list = n_list
+        elif g_list or n_list:
+            user_list = g_list if g_list else n_list
+        send_text = context.text
+        for k, v in plain_dict.items():
+            if k in send_text:
+                tmp = get_redis(f"keyword.{chat_id}.single.plain.{encode(k)}")
+                could_reply = validate(str(sender_id), int(mode), user_list)
+                if tmp:
+                    could_reply = validate(str(sender_id), int(tmp.get("mode", "0")), tmp.get("list", []))
+                if could_reply:
+                    read_context[context.id] = None
+                    await send_reply(chat_id, parse_multi(v), context)
+        for k, v in regex_dict.items():
+            pattern = re.compile(k)
+            if pattern.search(send_text):
+                tmp = get_redis(f"keyword.{chat_id}.single.regex.{encode(k)}")
+                could_reply = validate(str(sender_id), int(mode), user_list)
+                if tmp:
+                    could_reply = validate(str(sender_id), int(tmp.get("mode", "0")), tmp.get("list", []))
+                if could_reply:
+                    read_context[context.id] = None
+                    catch_pattern = r"\$\{regex_(?P<str>((?!\}).)+)\}"
+                    count = 0
+                    while re.search(catch_pattern, v) and count < 20:
+                        search_data = re.search(k, send_text)
+                        group_name = re.search(catch_pattern, v).group("str")
+                        capture_data = get_capture(search_data, group_name)
+                        if not capture_data:
+                            capture_data = ""
+                        if re.search(catch_pattern, capture_data):
+                            capture_data = ""
+                        v = v.replace("${regex_%s}" % group_name, capture_data)
+                        count += 1
+                    await send_reply(chat_id, parse_multi(v), context)
+    else:
+        del read_context[context.id]
