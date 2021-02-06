@@ -1,8 +1,10 @@
-import re, time, asyncio, requests
+import re, time, asyncio, requests, os
+from io import BytesIO
 from os import path, mkdir, remove
 from shutil import copyfile
 from uuid import uuid4
 from base64 import b64encode, b64decode
+from importlib import import_module
 from pagermaid import bot, redis, log, redis_status
 from pagermaid.listener import listener
 
@@ -143,6 +145,16 @@ async def send_reply(chat_id, reply_msg, context):
         update_last_time = False
         could_send_msg = valid_time(chat_id)
         for re_type, re_msg in reply_msg:
+            catch_pattern = r"\$\{func_(?P<str>((?!\}).)+)\}"
+            count = 0
+            while re.search(catch_pattern, re_msg) and count < 20:
+                func_name = re.search(catch_pattern, re_msg).group("str")
+                try:
+                    func_data = import_module(f"plugins.keyword_func.{func_name}").main(context)
+                except:
+                    func_data = "[RE]"
+                re_msg = re_msg.replace("${func_%s}" % func_name, str(func_data))
+                count += 1
             for k, v in replace_data.items():
                 re_msg = re_msg.replace(f"${k}", str(v))
             type_parse = re_type.split(",")
@@ -322,8 +334,10 @@ async def reply_set(context):
 `-replyset show` 或
 `-replyset clear` 或
 `-replyset mode <0/1/clear>` ( 0 表示黑名单，1 表示白名单 ) 或
-`-replyset list <add/del/show/clear> [user_id]`。
-在 `-replyset` 后面加上 `global` 即为全局设置''')
+`-replyset list <add/del/show/clear> [user_id]` 或
+`-replyset freq <float/clear>` ( float 表示一个正的浮点数，clear 为清除 )。
+在 `-replyset` 后面加上 `global` 即为全局设置。
+在 `-replyset` 后面加上 `plain/regex` 规则序号 可以单独设置一条规则。''')
             await del_msg(context, 15)
             return
         elif params[0] == "show":
@@ -452,6 +466,84 @@ async def reply_set(context):
         await del_msg(context, 5)
         return
     
+@listener(outgoing=True, command="funcset",
+          description="设置自定义函数",
+          parameters="help")
+async def funcset(context):
+    if not path.exists("plugins/keyword_func"):
+        mkdir("plugins/keyword_func") 
+    params = context.parameter
+    params = " ".join(params).split("\n")
+    cmd = []
+    if len(params) >= 1:
+        cmd = params[0].split()
+    if len(cmd) > 0:
+        if len(cmd) == 1 and cmd[0] == "ls":
+            send_msg = "Functions:\n"
+            count = 1
+            for p in os.listdir("plugins/keyword_func"):
+                if path.isfile(f"plugins/keyword_func/{p}"):
+                    try:
+                        send_msg += f"{count}: `{p[:len(p) - 3]}`\n"
+                        count += 1
+                    except:
+                        pass
+            await context.edit(send_msg)
+            return
+        elif len(cmd) == 2 and cmd[0] == "show":
+            file_path = f"plugins/keyword_func/{cmd[1]}.py"
+            if path.exists(file_path) and path.isfile(file_path):
+                await bot.send_file(context.chat_id, file_path)
+                await context.edit("发送成功")
+                await del_msg(context, 5)
+            else:
+                await context.edit("函数不存在")
+                await del_msg(context, 5)
+            return
+        elif len(cmd) == 2 and cmd[0] == "del":
+            file_path = f"plugins/keyword_func/{cmd[1]}.py"
+            if path.exists(file_path) and path.isfile(file_path):
+                remove(file_path)
+                await context.edit("删除成功，正在重启 PagerMaid")
+                await bot.disconnect()
+            else:
+                await context.edit("函数不存在")
+                await del_msg(context, 5)
+            return
+        elif len(cmd) == 2 and cmd[0] == "new":
+            message = await context.get_reply_message()
+            if context.media:
+                message = context
+            cmd[1] = cmd[1].replace(".py", "")
+            if message and message.media:
+                try:
+                    data = BytesIO()
+                    await bot.download_file(message.media.document, data)
+                    with open(f"plugins/keyword_func/{cmd[1]}.py", "wb") as f:
+                        f.write(data.getvalue())
+                    await context.edit("添加成功，正在重启 PagerMaid")
+                    await bot.disconnect()
+                except:
+                    await context.edit("添加失败")
+                    await del_msg(context, 5)
+            else:
+                await context.edit("未回复信息或回复信息中不包含文件")
+                await del_msg(context, 5)
+            return
+        elif len(cmd) == 1 and cmd[0] == "help":
+            await context.edit("""
+`-funcset new <func_name>` (要回复带有文件的信息或自己附带文件)
+`-funcset del <func_name>`
+`-funcset show <func_name>` (发送文件)
+`-funcset ls` (列出所有函数)""")
+        else:
+            await context.edit("参数错误")
+            await del_msg(context, 5)
+            return
+    else:
+        await context.edit("参数错误")
+        await del_msg(context, 5)
+        return
 
 @listener(incoming=True, ignore_edited=True)
 async def auto_reply(context):
