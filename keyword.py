@@ -145,58 +145,62 @@ async def send_reply(chat_id, reply_msg, context):
         update_last_time = False
         could_send_msg = valid_time(chat_id)
         for re_type, re_msg in reply_msg:
-            catch_pattern = r"\$\{func_(?P<str>((?!\}).)+)\}"
-            count = 0
-            while re.search(catch_pattern, re_msg) and count < 20:
-                func_name = re.search(catch_pattern, re_msg).group("str")
-                try:
-                    module = import_module(f"plugins.keyword_func.{func_name}")
-                    func_data = await module.main(context)
-                except:
-                    func_data = "[RE]"
-                re_msg = re_msg.replace("${func_%s}" % func_name, str(func_data))
-                count += 1
-            for k, v in replace_data.items():
-                re_msg = re_msg.replace(f"${k}", str(v))
-            type_parse = re_type.split(",")
-            for s in type_parse:
-                if len(s) >= 5 and "ext_" == s[0:4] and is_num(s[4:]):
-                    chat_id = int(s[4:])
-                    break
-            if "plain" in type_parse:
-                if could_send_msg:
-                    update_last_time = True
-                    await bot.send_message(chat_id, re_msg, reply_to = None)
-            elif "reply" in type_parse and chat_id == real_chat_id:
-                if could_send_msg:
-                    update_last_time = True
-                    await bot.send_message(chat_id, re_msg, reply_to = context.id)
-            elif "file" in type_parse and len(re_msg.split()) >= 2:
-                if could_send_msg:
-                    update_last_time = True
-                    if not path.exists("/tmp"):
-                        mkdir("/tmp")
-                    re_data = re_msg.split()
-                    file_name = "/tmp/" + re_data[0]
-                    if re_data[1][0:7] == "file://":
-                        copyfile(re_data[1][7:], file_name)
-                    else:
-                        file_get = requests.get(" ".join(re_data[1:]))
-                        with open(file_name, "wb") as f:
-                            f.write(file_get.content)
-                    reply_to = None
-                    if "reply" in re_type.split(","):
-                        reply_to = context.id
-                    await bot.send_file(chat_id, file_name, reply_to = reply_to, force_document = True)
-                    remove(file_name)
-            elif "op" in type_parse:
-                if re_msg == "delete":
-                    await context.delete()
-                elif re_msg.split()[0] == "sleep" and len(re_msg.split()) == 2:
-                    sleep_time = re_msg.split()[1]
-                    if is_num(sleep_time):
-                        await asyncio.sleep(int(sleep_time))
-            chat_id = real_chat_id
+            try:
+                catch_pattern = r"\$\{func_(?P<str>((?!\}).)+)\}"
+                count = 0
+                while re.search(catch_pattern, re_msg) and count < 20:
+                    func_name = re.search(catch_pattern, re_msg).group("str")
+                    try:
+                        module = import_module(f"plugins.keyword_func.{func_name}")
+                        func_data = await module.main(context)
+                    except:
+                        func_data = "[RE]"
+                    re_msg = re_msg.replace("${func_%s}" % func_name, str(func_data))
+                    count += 1
+                for k, v in replace_data.items():
+                    re_type = re_type.replace(f"${k}", str(v))
+                    re_msg = re_msg.replace(f"${k}", str(v))
+                type_parse = re_type.split(",")
+                for s in type_parse:
+                    if len(s) >= 5 and "ext_" == s[0:4] and is_num(s[4:]):
+                        chat_id = int(s[4:])
+                        break
+                if "plain" in type_parse:
+                    if could_send_msg:
+                        update_last_time = True
+                        await bot.send_message(chat_id, re_msg, reply_to = None)
+                elif "reply" in type_parse and chat_id == real_chat_id:
+                    if could_send_msg:
+                        update_last_time = True
+                        await bot.send_message(chat_id, re_msg, reply_to = context.id)
+                elif "file" in type_parse and len(re_msg.split()) >= 2:
+                    if could_send_msg:
+                        update_last_time = True
+                        if not path.exists("/tmp"):
+                            mkdir("/tmp")
+                        re_data = re_msg.split()
+                        file_name = "/tmp/" + re_data[0]
+                        if re_data[1][0:7] == "file://":
+                            copyfile(re_data[1][7:], file_name)
+                        else:
+                            file_get = requests.get(" ".join(re_data[1:]))
+                            with open(file_name, "wb") as f:
+                                f.write(file_get.content)
+                        reply_to = None
+                        if "reply" in re_type.split(","):
+                            reply_to = context.id
+                        await bot.send_file(chat_id, file_name, reply_to = reply_to, force_document = True)
+                        remove(file_name)
+                elif "op" in type_parse:
+                    if re_msg == "delete":
+                        await context.delete()
+                    elif re_msg.split()[0] == "sleep" and len(re_msg.split()) == 2:
+                        sleep_time = re_msg.split()[1]
+                        if is_num(sleep_time):
+                            await asyncio.sleep(int(sleep_time))
+                chat_id = real_chat_id
+            except:
+                pass
         if update_last_time:
             global group_last_time
             group_last_time[int(chat_id)] = time.time()
