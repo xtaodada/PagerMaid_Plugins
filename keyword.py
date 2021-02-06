@@ -150,7 +150,8 @@ async def send_reply(chat_id, reply_msg, context):
             while re.search(catch_pattern, re_msg) and count < 20:
                 func_name = re.search(catch_pattern, re_msg).group("str")
                 try:
-                    func_data = import_module(f"plugins.keyword_func.{func_name}").main(context)
+                    module = import_module(f"plugins.keyword_func.{func_name}")
+                    func_data = await module.main(context)
                 except:
                     func_data = "[RE]"
                 re_msg = re_msg.replace("${func_%s}" % func_name, str(func_data))
