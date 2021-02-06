@@ -56,22 +56,35 @@
     - `denyu` : 在某群中强制禁言某用户。
     - `nthmsg` : 获取你发送的第 n 条消息。
     - `portball` : 回复你要临时禁言的人的消息来实现XX秒的禁言。
+    - `da` : 删除所有信息。
+    - `diss` : 祖安对线语录。
+    - `shangliu` : 上流对话工具。
+    - `killallmembers` : 一键扬了群。
+    - `aff` : 光速发Aff信息。
+    - `stickertopic` : 贴纸转图片。
+    - `vip` : vip 捐赠用户功能。
+    - `calculator` : 小型计算器。
+    - `paolu` : 一键跑路（删所有消息并禁言）。
+    - `keyword` : 群组关键词自动回复插件。
+    - `msgst` : 每天定时发送消息。
 - profile （资料类）
     - `autochangename` : 自动更新 last_name 为时间等。
     - `throwit` : 生成一张 扔头像 图片。
+    - `mjx` : 随机带评价买家秀，随机涩气买家秀。
     - `eat` : 生成一张 吃头像 图片。
-    - `mjx` : 随机发一张淘宝买家秀
 - daily （便民类）
     - `weather` : 查询天气。
     - `xtao-some` : 一大堆便民功能。
     - `yb-dl` : 上传 Youtube、Bilibili 视频到 telegram。
     - `rate` : 汇率转换。
-    - `netease` : 网易云热评。
+    - `netease` : 随机一条网易云音乐热评。
     - `hyperlink` : 生成隐藏链接。
-    - `whois` : 查询域名信息
-    - `resou` : 知乎，抖音，微博实时热搜
-    - `tel` : 查询手机号码归属地等信息
-    - `neteaseshuffle` : 随即一首网易云热门曲目
-    - `neteasemusic` : 发送一首来自网易云的音乐
-    - `shangliu` : 彩虹屁生成器,毒鸡汤生成器,营销号生成器
-    - `diss` : 祖安语言生成器
+    - `resou` : 微博，知乎，抖音实时热搜，B站实时排行榜。
+    - `tel` : 查询手机号码归属地等信息。
+    - `whois` : 查询域名whois信息。
+    - `cosplay-multi` : 多网站随机获取Cos图。
+    - `meizi` : 多网站随机获取写真。
+    - `acg-multi` : 多网站随机获取ACG图。
+    - `neteaseshuffle` : 随机网抑热歌。
+    - `neteasemusic` : 网易云搜歌/随机热歌/点歌。
+    - `videodl` : 下载YTB/B站视频。
