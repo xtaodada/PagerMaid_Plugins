@@ -379,6 +379,16 @@
             "supported": true,
             "des-short": "每天定时发送消息",
             "des": "命令: msgst, msgset。"
+        },
+        {
+            "name": "transfer",
+            "version": "1.0",
+            "section": "daily",
+            "maintainer": "c3b2a",
+            "size": "2.7 kb",
+            "supported": true,
+            "des-short": "上传和下载文件。",
+            "des": "命令: transfer"
         }
     ]
 }
