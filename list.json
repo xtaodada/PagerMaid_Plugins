@@ -362,10 +362,10 @@
         },
         {
             "name": "keyword",
-            "version": "2.21",
+            "version": "2.22",
             "section": "chat",
             "maintainer": "c3b2a",
-            "size": "24.5 kb",
+            "size": "24.8 kb",
             "supported": true,
             "des-short": "群组关键词自动回复插件",
             "des": "命令: keyword, replyset, funcset。"
