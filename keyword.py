@@ -522,7 +522,7 @@ async def funcset(context):
             for p in os.listdir("plugins/keyword_func"):
                 if path.isfile(f"plugins/keyword_func/{p}"):
                     try:
-                        send_msg += f"{count}: `{p[:len(p) - 3]}`\n"
+                        send_msg += f"{count}: `{p[:-3]}`\n"
                         count += 1
                     except:
                         pass
@@ -542,7 +542,7 @@ async def funcset(context):
             file_path = f"plugins/keyword_func/{cmd[1]}.py"
             if path.exists(file_path) and path.isfile(file_path):
                 remove(file_path)
-                await context.edit("删除成功，正在重启 PagerMaid")
+                await context.edit("删除成功，PagerMaid-Modify 正在重新启动。")
                 await bot.disconnect()
             else:
                 await context.edit("函数不存在")
@@ -570,26 +570,31 @@ async def funcset(context):
                 await del_msg(context, 5)
             return
         elif len(cmd) == 2 and cmd[0] == "install":
-            fun_name = cmd[1]
-            fun_online = \
+            func_name = cmd[1]
+            func_online = \
                 json.loads(
-                    requests.get("https://raw.githubusercontent.com/xtaodada/PagerMaid_Plugins/master/keyword_func/list.json").content)[
-                    'list']
-            if fun_name in fun_online:
-                fun_directory = f"{working_dir}/plugins/keyword_func/"
-                file_path = fun_name + ".py"
-                fun_content = requests.get(
-                    f"https://raw.githubusercontent.com/xtaodada/PagerMaid_Plugins/master/keyword_func/{fun_name}.py").content
+                    requests.get("https://raw.githubusercontent.com/xtaodada/PagerMaid_Plugins/master"
+                                 "/keyword_func/list.json").content)['list']
+            if func_name in func_online:
+                func_directory = f"{working_dir}/plugins/keyword_func/"
+                file_path = func_name + ".py"
+                func_content = requests.get(
+                    f"https://raw.githubusercontent.com/xtaodada/PagerMaid_Plugins/master"
+                    f"/keyword_func/{func_name}.py").content
                 with open(file_path, 'wb') as f:
-                    f.write(fun_content)
-                if path.exists(f"{fun_directory}{file_path}"):
-                    remove(f"{fun_directory}{file_path}")
-                    move(file_path, fun_directory)
+                    f.write(func_content)
+                if path.exists(f"{func_directory}{file_path}"):
+                    remove(f"{func_directory}{file_path}")
+                    move(file_path, func_directory)
                 else:
-                    move(file_path, fun_directory)
+                    move(file_path, func_directory)
                 await context.edit(f"函数 {path.basename(file_path)[:-3]} 已添加，PagerMaid-Modify 正在重新启动。")
                 await log(f"成功安装函数 {path.basename(file_path)[:-3]}.")
-                await context.client.disconnect()
+                await bot.disconnect()
+            else:
+                await context.edit(f"{func_name} 函数不存在")
+                await del_msg(context, 5)
+            return
         elif len(cmd) == 1 and cmd[0] == "help":
             await context.edit("""
 `-funcset new <func_name>` (要回复带有文件的信息或自己附带文件)
