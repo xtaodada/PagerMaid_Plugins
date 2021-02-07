@@ -141,7 +141,10 @@ async def send_reply(chat_id, reply_msg, context):
                 replace_data["last_name"] = sender.last_name if sender.last_name else ""
             if chat:
                 replace_data["chat_id"] = chat.id
-                replace_data["chat_name"] = chat.title
+                last_name = chat.last_name
+                if not last_name:
+                    last_name = ""
+                replace_data["chat_name"] = f"{chat.first_name} {last_name}"
         update_last_time = False
         could_send_msg = valid_time(chat_id)
         for re_type, re_msg in reply_msg:
@@ -576,6 +579,8 @@ async def auto_reply(context):
         elif g_list or n_list:
             user_list = g_list if g_list else n_list
         send_text = context.text
+        if not send_text:
+            send_text = ""
         for k, v in plain_dict.items():
             if k in send_text:
                 tmp = get_redis(f"keyword.{chat_id}.single.plain.{encode(k)}")
