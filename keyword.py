@@ -183,16 +183,17 @@ async def send_reply(chat_id, reply_msg, context):
                 for s in type_parse:
                     if len(s) >= 5 and "ext_" == s[0:4] and is_num(s[4:]):
                         chat_id = int(s[4:])
+                        type_parse.remove(s)
                         break
-                if "plain" in type_parse:
+                if "plain" == re_type:
                     if could_send_msg:
                         update_last_time = True
                         await bot.send_message(chat_id, re_msg, reply_to=None)
-                elif "reply" in type_parse and chat_id == real_chat_id:
+                elif "reply" == re_type and chat_id == real_chat_id:
                     if could_send_msg:
                         update_last_time = True
                         await bot.send_message(chat_id, re_msg, reply_to=context.id)
-                elif "file" in type_parse and len(re_msg.split()) >= 2:
+                elif ("file" in type_parse or "photo" in type_parse) and len(re_msg.split()) >= 2:
                     if could_send_msg:
                         update_last_time = True
                         if not path.exists("/tmp"):
@@ -206,20 +207,46 @@ async def send_reply(chat_id, reply_msg, context):
                             with open(file_name, "wb") as f:
                                 f.write(file_get.content)
                         reply_to = None
-                        if "reply" in re_type.split(","):
+                        if "reply" in type_parse:
                             reply_to = context.id
-                        await bot.send_file(chat_id, file_name, reply_to=reply_to, force_document=True)
+                        await bot.send_file(chat_id, file_name,
+                                            reply_to=reply_to, force_document=("file" in type_parse))
                         remove(file_name)
+                elif ("tgfile" in type_parse or "tgphoto" in type_parse) and len(re_msg.split()) >= 2:
+                    if could_send_msg:
+                        update_last_time = True
+                        if not path.exists("/tmp"):
+                            mkdir("/tmp")
+                        re_data = re_msg.split()
+                        file_name = "/tmp/" + re_data[0]
+                        _data = BytesIO()
+                        re_data[1] = re_data[1].split("/")[-2:]
+                        msg_chat_id = int(re_data[1][0])
+                        msg_id_inchat = int(re_data[1][1])
+                        media_msg = (await bot.get_messages(msg_chat_id, msg_id_inchat))[0]
+                        _data = BytesIO()
+                        if media_msg and media_msg.media:
+                            if "tgfile" in type_parse:
+                                await bot.download_file(media_msg.media.document, _data)
+                            else:
+                                await bot.download_file(media_msg.photo, _data)
+                            with open(file_name, "wb") as f:
+                                f.write(_data.getvalue())
+                            reply_to = None
+                            if "reply" in type_parse:
+                                reply_to = context.id
+                            await bot.send_file(chat_id, file_name, reply_to=reply_to,
+                                                force_document=("tgfile" in type_parse))
+                            remove(file_name)
                 elif "op" in type_parse:
                     if re_msg == "delete":
                         await context.delete()
                     elif re_msg.split()[0] == "sleep" and len(re_msg.split()) == 2:
                         sleep_time = re_msg.split()[1]
-                        if is_num(sleep_time):
-                            await asyncio.sleep(int(sleep_time))
+                        await asyncio.sleep(float(sleep_time))
                 chat_id = real_chat_id
             except:
-                pass
+                chat_id = real_chat_id
         if update_last_time:
             global group_last_time
             group_last_time[int(chat_id)] = time.time()
@@ -229,8 +256,8 @@ async def send_reply(chat_id, reply_msg, context):
 
 @listener(is_plugin=True, outgoing=True, command="keyword",
           description="关键词自动回复",
-          parameters="``new <plain|regex> '<规则>' '<回复信息>'` 或者 `del <plain|regex> '<规则>'` 或者 `list` 或者 `clear "
-                     "<plain|regex>")
+          parameters="``new <plain|regex> '<规则>' '<回复信息>'` 或者 `del <plain|regex> '<规则>'` 或者 `list` 或者 "
+                     "`clear <plain|regex>")
 async def reply(context):
     if not redis_status():
         await context.edit("出错了呜呜呜 ~ Redis 离线，无法运行")
@@ -252,8 +279,8 @@ async def reply(context):
             len(parse[0].split()) == 1 and parse[0].split()[0] in ("new", "del", "delid", "clear")) or len(
             parse[0].split()) > 2:
         await context.edit(
-            "[Code: -1] 格式错误，格式为 `-keyword` 加上 `new <plain|regex> '<规则>' '<回复信息>'` 或者 `del <plain|regex> '<规则>'` 或者 "
-            "`list` 或者 `clear <plain|regex>`")
+            "[Code: -1] 格式错误，格式为 `-keyword` 加上 `new <plain|regex> '<规则>' '<回复信息>'` 或者 "
+            "`del <plain|regex> '<规则>'` 或者 `list` 或者 `clear <plain|regex>`")
         await del_msg(context, 10)
         return
     else:
@@ -267,8 +294,8 @@ async def reply(context):
             redis.set(f"keyword.{chat_id}.regex", save_rules(regex_dict, placeholder))
         else:
             await context.edit(
-                "格式错误，格式为 `-keyword` 加上 `new <plain|regex> '<规则>' '<回复信息>'` 或者 `del <plain|regex> '<规则>'` 或者 `list` "
-                "或者 `clear <plain|regex>`")
+            "[Code: -1] 格式错误，格式为 `-keyword` 加上 `new <plain|regex> '<规则>' '<回复信息>'` 或者 "
+            "`del <plain|regex> '<规则>'` 或者 `list` 或者 `clear <plain|regex>`")
             await del_msg(context, 10)
             return
         await context.edit("设置成功")
@@ -298,8 +325,8 @@ async def reply(context):
                 return
         else:
             await context.edit(
-                "格式错误，格式为 -keyword 加上 new <plain|regex> '<规则>' '<回复信息>' 或者 del <plain|regex> '<规则>' 或者 list 或者 clear "
-                "<plain|regex>")
+            "[Code: -1] 格式错误，格式为 `-keyword` 加上 `new <plain|regex> '<规则>' '<回复信息>'` 或者 "
+            "`del <plain|regex> '<规则>'` 或者 `list` 或者 `clear <plain|regex>`")
             await del_msg(context, 10)
             return
         await context.edit("删除成功")
@@ -333,8 +360,8 @@ async def reply(context):
         await del_msg(context, 5)
     else:
         await context.edit(
-            "[Code -2] 格式错误，格式为 `-keyword` 加上 `new <plain|regex> '<规则>' '<回复信息>'` 或者 `del <plain|regex> '<规则>'` 或者 "
-            "`list` 或者 `clear <plain|regex>`")
+            "[Code: -1] 格式错误，格式为 `-keyword` 加上 `new <plain|regex> '<规则>' '<回复信息>'` 或者 "
+            "`del <plain|regex> '<规则>'` 或者 `list` 或者 `clear <plain|regex>`")
         await del_msg(context, 10)
         return
 
@@ -616,9 +643,9 @@ async def funcset(context):
 async def auto_reply(context):
     if not redis_status():
         return
-    chat_id = context.chat_id
-    sender_id = context.sender_id
     try:
+        chat_id = context.chat_id
+        sender_id = context.sender_id
         if context.id not in read_context:
             plain_dict = get_redis(f"keyword.{chat_id}.plain")
             regex_dict = get_redis(f"keyword.{chat_id}.regex")
