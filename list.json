@@ -362,10 +362,10 @@
         },
         {
             "name": "keyword",
-            "version": "2.4",
+            "version": "2.5",
             "section": "chat",
             "maintainer": "c3b2a, xtaodada",
-            "size": "28.6 kb",
+            "size": "32.9 kb",
             "supported": true,
             "des-short": "群组关键词自动回复插件",
             "des": "命令: keyword, replyset, funcset。"
