@@ -1,6 +1,6 @@
 import re, time, asyncio, requests, os, json
 from io import BytesIO
-from os import path, mkdir, remove, makedirs
+from os import path, mkdir, remove, makedirs, chdir
 from shutil import copyfile, move, rmtree
 from uuid import uuid4
 from base64 import b64encode, b64decode
@@ -196,8 +196,8 @@ async def send_reply(chat_id, trigger, mode, reply_msg, context):
                 while re.search(catch_pattern, re_msg) and count < 20:
                     func_name = re.search(catch_pattern, re_msg).group("str")
                     try:
-                        module = import_module(f"plugins.keyword_func.{func_name}")
-                        func_data = await module.main(context)
+                        func_data = await(import_module(f"data.keyword_func.{func_name}")).main(context)
+                        chdir(working_dir)
                     except:
                         func_data = "[RE]"
                     re_msg = re_msg.replace("${func_%s}" % func_name, str(func_data))
@@ -627,8 +627,8 @@ async def reply_set(context):
           description="设置自定义函数",
           parameters="help")
 async def funcset(context):
-    if not path.exists("plugins/keyword_func"):
-        mkdir("plugins/keyword_func")
+    if not path.exists("data/keyword_func"):
+        makedirs("data/keyword_func")
     try:
         params = context.parameter
         params = " ".join(params).split("\n")
@@ -639,8 +639,8 @@ async def funcset(context):
             if len(cmd) == 1 and cmd[0] == "ls":
                 send_msg = "Functions:\n"
                 count = 1
-                for p in os.listdir("plugins/keyword_func"):
-                    if path.isfile(f"plugins/keyword_func/{p}"):
+                for p in os.listdir("data/keyword_func"):
+                    if path.isfile(f"data/keyword_func/{p}"):
                         try:
                             send_msg += f"{count}: `{p[:-3]}`\n"
                             count += 1
@@ -649,7 +649,7 @@ async def funcset(context):
                 await context.edit(send_msg)
                 return
             elif len(cmd) == 2 and cmd[0] == "show":
-                file_path = f"plugins/keyword_func/{cmd[1]}.py"
+                file_path = f"data/keyword_func/{cmd[1]}.py"
                 if path.exists(file_path) and path.isfile(file_path):
                     await bot.send_file(context.chat_id, file_path)
                     await context.edit("发送成功")
@@ -659,7 +659,7 @@ async def funcset(context):
                     await del_msg(context, 5)
                 return
             elif len(cmd) == 2 and cmd[0] == "del":
-                file_path = f"plugins/keyword_func/{cmd[1]}.py"
+                file_path = f"data/keyword_func/{cmd[1]}.py"
                 if path.exists(file_path) and path.isfile(file_path):
                     remove(file_path)
                     await context.edit("删除成功，PagerMaid-Modify 正在重新启动。")
@@ -677,7 +677,7 @@ async def funcset(context):
                     try:
                         data = BytesIO()
                         await bot.download_file(message.media.document, data)
-                        with open(f"plugins/keyword_func/{cmd[1]}.py", "wb") as f:
+                        with open(f"data/keyword_func/{cmd[1]}.py", "wb") as f:
                             f.write(data.getvalue())
                         await context.edit(f"函数 {cmd[1]} 已添加，PagerMaid-Modify 正在重新启动。")
                         await bot.disconnect()
@@ -696,7 +696,7 @@ async def funcset(context):
                         requests.get("https://raw.githubusercontent.com/xtaodada/PagerMaid_Plugins/master"
                                     "/keyword_func/list.json").content)['list']
                 if func_name in func_online:
-                    func_directory = f"{working_dir}/plugins/keyword_func/"
+                    func_directory = f"data/keyword_func/"
                     file_path = func_name + ".py"
                     func_content = requests.get(
                         f"https://raw.githubusercontent.com/xtaodada/PagerMaid_Plugins/master"
