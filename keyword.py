@@ -7,7 +7,10 @@ from base64 import b64encode, b64decode
 from importlib import import_module
 from pyrogram import Client, filters
 from main import cmd, par, des, prefix_str, redis
+from modules.plugin import check_require
 
+
+incoming_load, incoming_load_text = check_require('incoming', '0.1')
 msg_freq = 1
 group_last_time = {}
 read_context = {}
@@ -305,16 +308,22 @@ async def send_reply(bot, chat_id, trigger, mode, reply_msg, context):
     except:
         pass
 
+
 cmd.extend(["keyword", "replyset", "funcset"])
 par.extend(["``new <plain|regex> '<规则>' '<回复信息>'` 或者 `del <plain|regex> '<规则>'` 或者 `list` 或者 "
             "`clear <plain|regex>", "help", "help"])
 des.extend(["关键词自动回复。", "自动回复设置。", "设置自定义函数。"])
+
 
 @Client.on_message(filters.me & filters.command("keyword", list(prefix_str)))
 async def reply(bot, context):
     if not redis_status():
         await context.edit("出错了呜呜呜 ~ Redis 离线，无法运行")
         await del_msg(context, 5)
+        return
+    if not incoming_load:
+        await context.edit(incoming_load_text)
+        await del_msg(context, 10)
         return
     context.parameter = context.text.split(" ")[1:]
     chat_id = context.chat.id
@@ -331,7 +340,7 @@ async def reply(bot, context):
             parse.append(tmp_parse[i])
     if len(parse) == 0 or (
             len(parse[0].split()) == 1 and parse[0].split()[0] in ("new", "del", "delid", "clear")) or len(
-            parse[0].split()) > 2:
+        parse[0].split()) > 2:
         await context.edit(
             "[Code: -1] 格式错误，格式为 `-keyword` 加上 `new <plain|regex> '<规则>' '<回复信息>'` 或者 "
             "`del <plain|regex> '<规则>'` 或者 `list` 或者 `clear <plain|regex>`", parse_mode='md')
@@ -348,8 +357,8 @@ async def reply(bot, context):
             redis.set(f"keyword.{chat_id}.regex", save_rules(regex_dict, placeholder))
         else:
             await context.edit(
-            "[Code: -1] 格式错误，格式为 `-keyword` 加上 `new <plain|regex> '<规则>' '<回复信息>'` 或者 "
-            "`del <plain|regex> '<规则>'` 或者 `list` 或者 `clear <plain|regex>`")
+                "[Code: -1] 格式错误，格式为 `-keyword` 加上 `new <plain|regex> '<规则>' '<回复信息>'` 或者 "
+                "`del <plain|regex> '<规则>'` 或者 `list` 或者 `clear <plain|regex>`")
             await del_msg(context, 10)
             return
         await context.edit("设置成功")
@@ -379,8 +388,8 @@ async def reply(bot, context):
                 return
         else:
             await context.edit(
-            "[Code: -1] 格式错误，格式为 `-keyword` 加上 `new <plain|regex> '<规则>' '<回复信息>'` 或者 "
-            "`del <plain|regex> '<规则>'` 或者 `list` 或者 `clear <plain|regex>`")
+                "[Code: -1] 格式错误，格式为 `-keyword` 加上 `new <plain|regex> '<规则>' '<回复信息>'` 或者 "
+                "`del <plain|regex> '<规则>'` 或者 `list` 或者 `clear <plain|regex>`")
             await del_msg(context, 10)
             return
         await context.edit("删除成功")
@@ -425,6 +434,10 @@ async def reply_set(bot, context):
     if not redis_status():
         await context.edit("出错了呜呜呜 ~ Redis 离线，无法运行")
         await del_msg(context, 5)
+        return
+    if not incoming_load:
+        await context.edit(incoming_load_text)
+        await del_msg(context, 10)
         return
     context.parameter = context.text.split(" ")[1:]
     chat_id = context.chat.id
@@ -634,6 +647,10 @@ async def reply_set(bot, context):
 
 @Client.on_message(filters.me & filters.command("funcset", list(prefix_str)))
 async def funcset(bot, context):
+    if not incoming_load:
+        await context.edit(incoming_load_text)
+        await del_msg(context, 10)
+        return
     if not path.exists("data/keyword_func"):
         makedirs("data/keyword_func")
     try:
@@ -702,7 +719,7 @@ async def funcset(bot, context):
                 func_online = \
                     json.loads(
                         requests.get("https://raw.githubusercontent.com/xtaodada/PagerMaid_Plugins/master"
-                                    "/keyword_func/list.json").content)['list']
+                                     "/keyword_func/list.json").content)['list']
                 if func_name in func_online:
                     func_directory = f"data/keyword_func/"
                     file_path = func_name + ".py"
@@ -741,11 +758,8 @@ async def funcset(bot, context):
     except:
         pass
 
-"""
-@listener(incoming=True, ignore_edited=True)
-async def auto_reply(context):
-    if not redis_status():
-        return
+
+async def auto_reply(client, context):
     try:
         chat_id = context.chat.id
         sender_id = context.sender_id
@@ -779,7 +793,7 @@ async def auto_reply(context):
                         could_reply = validate(str(sender_id), int(tmp.get("mode", "0")), tmp.get("list", []))
                     if could_reply:
                         read_context[f"{chat_id}:{context.id}"] = None
-                        await send_reply(chat_id, k, "plain", parse_multi(v), context)
+                        await send_reply(client, chat_id, k, "plain", parse_multi(v), context)
             for k, v in regex_dict.items():
                 pattern = re.compile(k)
                 if pattern.search(send_text):
@@ -801,9 +815,8 @@ async def auto_reply(context):
                                 capture_data = ""
                             v = v.replace("${regex_%s}" % group_name, capture_data)
                             count += 1
-                        await send_reply(chat_id, k, "regex", parse_multi(v), context)
+                        await send_reply(client, chat_id, k, "regex", parse_multi(v), context)
         else:
             del read_context[f"{chat_id}:{context.id}"]
     except:
         pass
-"""
