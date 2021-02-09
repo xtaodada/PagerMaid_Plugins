@@ -365,7 +365,7 @@
             "version": "2.52",
             "section": "chat",
             "maintainer": "c3b2a, xtaodada",
-            "size": "32.9 kb",
+            "size": "33.4 kb",
             "supported": true,
             "des-short": "群组关键词自动回复插件",
             "des": "命令: keyword, replyset, funcset。"
