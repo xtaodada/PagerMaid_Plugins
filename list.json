@@ -389,6 +389,26 @@
             "supported": true,
             "des-short": "上传和下载文件。",
             "des": "命令: transfer"
+        },
+        {
+            "name": "xjj",
+            "version": "1.0",
+            "section": "daily",
+            "maintainer": "Moriarty-989",
+            "size": "1.4 kb",
+            "supported": true,
+            "des-short": "随机小姐姐写真。",
+            "des": "命令: xjj"
+        },
+        {
+            "name": "zpr",
+            "version": "1.0",
+            "section": "daily",
+            "maintainer": "Moriarty-989",
+            "size": "1.4 kb",
+            "supported": true,
+            "des-short": "随机小姐姐或纸片人写真。",
+            "des": "命令: xjj"
         }
     ]
 }
