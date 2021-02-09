@@ -189,6 +189,7 @@ async def send_reply(chat_id, trigger, mode, reply_msg, context):
                 replace_data["chat_name"] = f"{chat.first_name} {last_name}"
         update_last_time = False
         could_send_msg = valid_time(chat_id)
+        message_list = []
         for re_type, re_msg in reply_msg:
             try:
                 catch_pattern = r"\$\{func_(?P<str>((?!\}).)+)\}"
@@ -239,8 +240,8 @@ async def send_reply(chat_id, trigger, mode, reply_msg, context):
                         reply_to = None
                         if "reply" in type_parse:
                             reply_to = context.id
-                        await bot.send_file(chat_id, filename,
-                                            reply_to=reply_to, force_document=("file" in type_parse))
+                        message_list.append(await bot.send_file(chat_id, filename,
+                                            reply_to=reply_to, force_document=("file" in type_parse)))
                         if not is_opened:
                             remove(filename)
                 elif ("tgfile" in type_parse or "tgphoto" in type_parse) and len(re_msg.split()) >= 2:
@@ -270,24 +271,28 @@ async def send_reply(chat_id, trigger, mode, reply_msg, context):
                                 f.write(_data.getvalue())
                             reply_to = None
                             if "reply" in type_parse:
-                                reply_to = context.id
-                            await bot.send_file(chat_id, file_name, reply_to=reply_to,
-                                                force_document=("tgfile" in type_parse))
+                                reply_to = context.id 
+                            message_list.append(await bot.send_file(chat_id, file_name, reply_to=reply_to,
+                                                force_document=("tgfile" in type_parse)))
                             remove(file_name)
                 elif "plain" in type_parse:
                     if could_send_msg:
                         update_last_time = True
-                        await bot.send_message(chat_id, re_msg, reply_to=None)
+                        message_list.append(await bot.send_message(chat_id, re_msg,
+                                               link_preview=("nopreview" not in type_parse)))
                 elif "reply" in type_parse and chat_id == real_chat_id:
                     if could_send_msg:
                         update_last_time = True
-                        await bot.send_message(chat_id, re_msg, reply_to=context.id)
+                        message_list.append(await bot.send_message(chat_id, re_msg, reply_to=context.id,
+                                               link_preview=("nopreview" not in type_parse)))
                 elif "op" in type_parse:
                     if re_msg == "delete":
                         await context.delete()
                     elif re_msg.split()[0] == "sleep" and len(re_msg.split()) == 2:
                         sleep_time = re_msg.split()[1]
                         await asyncio.sleep(float(sleep_time))
+                    elif re_msg.split()[0] == "delself" and len(re_msg.split()) == 2:
+                        await message_list[int(re_msg.split()[1])].delete()
             except:
                 pass
             chat_id = real_chat_id
