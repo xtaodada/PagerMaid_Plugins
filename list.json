@@ -19,6 +19,16 @@
             "supported": true,
             "des-short": "vip 捐赠用户功能",
             "des": "命令：天气：weather Pixiv：pixiv。"
+        },
+        {
+            "name": "keyword",
+            "version": "2.5",
+            "section": "chat",
+            "maintainer": "c3b2a, xtaodada",
+            "size": "33.2 kb",
+            "supported": true,
+            "des-short": "关键词回复插件。",
+            "des": "命令：keyword, replyset, funcset。"
         }
     ]
 }
