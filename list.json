@@ -362,13 +362,13 @@
         },
         {
             "name": "keyword",
-            "version": "2.54",
+            "version": "2.55",
             "section": "chat",
             "maintainer": "c3b2a,xtaodada",
-            "size": "36.5 kb",
+            "size": "36.7 kb",
             "supported": true,
-            "des-short": "群组关键词自动回复插件",
-            "des": "命令: keyword, replyset, funcset。"
+            "des-short": "关键词自动回复插件。",
+            "des": "命令: keyword, keyworddata, replyset, funcset。"
         },
         {
             "name": "msgst",
