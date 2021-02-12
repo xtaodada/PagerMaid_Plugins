@@ -783,6 +783,37 @@ async def funcset(context):
         pass
 
 
+@listener(outgoing=True, command="keyworddata",
+          description="设置规则数据",
+          parameters="dump / load")
+async def setdata(context):
+    try:
+        chat_id = context.chat_id
+        params = context.parameter
+        if params[0] == "dump":
+            data = redis.get(f"keyword.{chat_id}.{params[1]}")
+            if not data:
+                await context.edit("无规则数据")
+                await del_msg(context, 5)
+                return
+            data = str(data, "ascii")
+            await context.edit(data)
+            return
+        elif params[0] == "load":
+            redis.set(f"keyword.{chat_id}.{params[1]}", params[2])
+            await context.edit("设置成功")
+            await del_msg(context, 5)
+            return
+        else:
+            await context.edit("参数错误")
+            await del_msg(context, 5)
+            return
+    except:
+        await context.edit("运行错误")
+        await del_msg(context, 5)
+        return
+
+
 @listener(incoming=True, ignore_edited=False)
 async def auto_reply(context):
     if not redis_status():
