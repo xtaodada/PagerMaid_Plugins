@@ -64,6 +64,8 @@ i.e.
 此命令可与 autorespond（也是我写的插件）, ghost, deny 命令串联：
 
 -sendat 10 minutes | -autorespond 我暂时有事离开一下。
+
+注意：因为某些未知原因，时间间隔较长的 sendat 会出现很大的误差。尚未修复。
 """
 
 @listener(is_plugin=True, outgoing=True, command="sendat", diagnostics=True, ignore_edited=True,
