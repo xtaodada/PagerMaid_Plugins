@@ -1,6 +1,6 @@
 import json
 import os,sys,codecs
-sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
+
 from requests import get
 from pagermaid.listener import listener
 from pagermaid.utils import obtain_message

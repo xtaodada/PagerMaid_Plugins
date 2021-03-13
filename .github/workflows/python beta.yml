@@ -1,9 +1,9 @@
-name: Github commit to telegram
+name: Github Beta commit to telegram
 
 on:
   push:
     branches:
-      - master
+      - beta
 
 jobs:
   build:
@@ -26,10 +26,9 @@ jobs:
         mkdir tmp && cd tmp
         python -m pip install --upgrade pip
         pip install requests
-
     # 发送通知
     - name: Send notice
       run: |
         cd tmp
-        cp ../telegram_update.py ./
-        python telegram_update.py ${{ secrets.TG_BOT_TOKEN }}
+        cp ../telegram_update_beta.py ./
+        python telegram_update_beta.py ${{ secrets.TG_BOT_TOKEN }}

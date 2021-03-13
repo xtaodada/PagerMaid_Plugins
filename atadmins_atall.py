@@ -8,7 +8,7 @@ import time
 
 @listener(is_plugin=True, outgoing=True, command="atadmins",
           description="一键 AT 本群管理员（仅在群组中有效）",
-          parameters="<要说的话>")
+          parameters="回复消息(可选) <要说的话(可选)>")
 async def atadmins(context):
     await context.edit('正在获取管理员列表中...')
     chat = await context.get_chat()
@@ -29,13 +29,16 @@ async def atadmins(context):
             elif admin.first_name is not None:
                 admin_list.extend(['[' + admin.first_name + '](tg://user?id=' + str(admin.id) + ')'])
     send_list = ' , '.join(admin_list)
-    # print(send_list)
-    await context.reply("%s：\n\n%s" % (say, send_list))
-    # await context.reply(' , '.join(admin_list))
+    reply = await context.get_reply_message()
+    if reply:
+        await reply.reply(f'{say}:\n{send_list}')
+    else:
+        await context.reply(f'{say}:\n{send_list}')
     await context.delete()
 
 @listener(is_plugin=True, outgoing=True, command="atall",
-          description="一键 AT 本群成员（仅在群组中有效）")
+          description="一键 AT 本群成员（仅在群组中有效）",
+          parameters="回复消息(可选) <要说的话(可选)>")
 async def atall(context):
     await context.edit('正在获取成员列表中...')
     chat = await context.get_chat()
@@ -63,5 +66,9 @@ async def atall(context):
                 user_list = []
                 time.sleep(1)
     text = ' , '.join(user_list)
-    await context.reply("%s：\n\n%s" % (say, text))
+    reply = await context.get_reply_message()
+    if reply:
+        await reply.reply(f'{say}:\n{text}')
+    else:
+        await context.reply(f'{say}:\n{text}')
     await context.delete()

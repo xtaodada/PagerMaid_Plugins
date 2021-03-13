@@ -42,33 +42,33 @@
         },
         {
             "name": "sendat",
-            "version": "1.2",
+            "version": "1.3",
             "section": "chat",
             "maintainer": "fruitymelon",
-            "size": "13.1 kb",
+            "size": "15.0 kb",
             "supported": true,
             "des-short": "定时发送消息。",
-            "des": "这个人很懒，什么都没有留下。"
+            "des": "命令：sendat，详情见 -help sendat"
         },
         {
             "name": "weather",
-            "version": "1.0",
+            "version": "1.1",
             "section": "daily",
             "maintainer": "xtaodada",
-            "size": "1.5 kb",
+            "size": "2.9 kb",
             "supported": true,
             "des-short": "查询天气。",
             "des": "这个人很懒，什么都没有留下。"
         },
         {
             "name": "xtao-some",
-            "version": "1.11",
+            "version": "1.154",
             "section": "daily",
             "maintainer": "xtaodada",
             "size": "18.8 kb",
             "supported": true,
             "des-short": "一大堆便民功能。",
-            "des": "超多功能 例如 -ip -pixiv -guess 等。"
+            "des": "超多功能 例如 -ip -ipping -guess -t -getdel 等。"
         },
         {
             "name": "yb-dl",
@@ -82,7 +82,7 @@
         },
         {
             "name": "throwit",
-            "version": "1.6",
+            "version": "1.61",
             "section": "profile",
             "maintainer": "xtaodada",
             "size": "6.9 kb",
@@ -112,7 +112,7 @@
         },
         {
             "name": "atadmins_atall",
-            "version": "1.11",
+            "version": "1.12",
             "section": "chat",
             "maintainer": "Pentacene",
             "size": "2.5 kb",
@@ -152,10 +152,10 @@
         },
         {
             "name": "portball",
-            "version": "1.41",
+            "version": "1.42",
             "section": "chat",
             "maintainer": "Pentacene",
-            "size": "4.3 kb",
+            "size": "2.8 kb",
             "supported": true,
             "des-short": "回复你要临时禁言的人的消息来实现XX秒的禁言。",
             "des": "portball <原因> <秒数>"
@@ -192,7 +192,7 @@
         },
         {
             "name": "whois",
-            "version": "1.11",
+            "version": "1.12",
             "section": "daily",
             "maintainer": "KorenKrita",
             "size": "1.1 kb",
@@ -202,7 +202,7 @@
         },
         {
             "name": "eat",
-            "version": "1.0",
+            "version": "1.01",
             "section": "profile",
             "maintainer": "SF_PICK",
             "size": "6.4 kb",
@@ -292,7 +292,7 @@
         },
         {
             "name": "killallmembers",
-            "version": "1.0",
+            "version": "1.03",
             "section": "chat",
             "maintainer": "Pentacene",
             "size": "idk",
@@ -332,13 +332,13 @@
         },
         {
             "name": "vip",
-            "version": "0.1",
+            "version": "0.2",
             "section": "chat",
             "maintainer": "xtaodada",
             "size": "4.0 kb",
             "supported": true,
             "des-short": "vip 捐赠用户功能",
-            "des": "命令：天气：weather 。"
+            "des": "命令：天气：weather Pixiv：pixiv。与 weather 插件冲突"
         },
         {
             "name": "calculator",
@@ -349,6 +349,76 @@
             "supported": true,
             "des-short": "小型计算器",
             "des": "/cal 6+4。"
+        },
+        {
+            "name": "paolu",
+            "version": "1.00",
+            "section": "chat",
+            "maintainer": "Pentacene",
+            "size": "1.0 kb",
+            "supported": true,
+            "des-short": "一键跑路（删所有消息并禁言）",
+            "des": "paolu。"
+        },
+        {
+            "name": "keyword",
+            "version": "2.61",
+            "section": "chat",
+            "maintainer": "c3b2a,xtaodada",
+            "size": "44.0 kb",
+            "supported": true,
+            "des-short": "关键词自动回复插件。",
+            "des": "命令: keyword, keydata, replyset, funcset。"
+        },
+        {
+            "name": "msgst",
+            "version": "1.1",
+            "section": "chat",
+            "maintainer": "c3b2a",
+            "size": "3.1 kb",
+            "supported": true,
+            "des-short": "每天定时发送消息",
+            "des": "命令: msgst, msgset。"
+        },
+        {
+            "name": "transfer",
+            "version": "1.0",
+            "section": "daily",
+            "maintainer": "c3b2a",
+            "size": "2.7 kb",
+            "supported": true,
+            "des-short": "上传和下载文件。",
+            "des": "命令: transfer"
+        },
+        {
+            "name": "xjj",
+            "version": "1.0",
+            "section": "daily",
+            "maintainer": "Moriarty-989",
+            "size": "1.4 kb",
+            "supported": true,
+            "des-short": "随机小姐姐写真。",
+            "des": "命令: xjj"
+        },
+        {
+            "name": "zpr",
+            "version": "1.0",
+            "section": "daily",
+            "maintainer": "Moriarty-989",
+            "size": "1.4 kb",
+            "supported": true,
+            "des-short": "随机小姐姐或纸片人写真。",
+            "des": "命令: xjj"
+        },
+        {
+            "name": "forcesend",
+            "version": "1.0",
+            "section": "chat",
+            "maintainer": "fruitymelon",
+            "size": "1.3 kb",
+            "supported": true,
+            "des-short": "无需进群，向频道附属群内发送消息",
+            "des": "命令：forcesend"
         }
     ]
 }

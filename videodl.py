@@ -8,7 +8,6 @@ from pagermaid import bot, log
 from pagermaid.listener import listener
 from telethon.tl.types import DocumentAttributeVideo
 from time import sleep
-from re import search
 
 
 @listener(outgoing=True, command="vdl",
@@ -33,7 +32,9 @@ async def vdl(context):
         try:
             from pytube import YouTube
         except ImportError:
-            await context.edit('(`pytube3`支持库未安装，YouTube视频无法下载\n请使用 `-sh` `pip3` `install` `pytube3` 安装，或自行ssh安装)')
+            await context.edit('`pytube`支持库未安装，YouTube视频无法下载\n请使用 `-sh pip3 install --user '
+                               'git+https://github.com/nficano/pytube` 安装，或自行ssh安装\n\n已安装过 `pytube3` 的用户请使用 `-sh pip3 '
+                               'uninstall pytube3 -y` 进行卸载')
             return
         url = url.replace('www.youtube.com/watch?v=', 'youtu.be/')
         if not await youtube_dl(url, context, reply_id):
@@ -68,7 +69,8 @@ async def youtube_dl(url, context, reply_id):
 
 async def bilibili_dl(url, context, reply_id):
     url = 'https://tenapi.cn/bilivideo/?url=' + url
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063', "X-Real-IP": "223.252.199.66"}
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                             'Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063', "X-Real-IP": "223.252.199.66"}
     for _ in range(20):  # 最多尝试20次
         status = False
         try:
@@ -101,7 +103,8 @@ async def upload(as_file, filename, context, reply_id, caption, duration=0):
         if not exists("plugins/VideoDLExtra"):
             mkdir("plugins/VideoDLExtra")
         faster = requests.request(
-            "GET", "https://gist.githubusercontent.com/TNTcraftHIM/ca2e6066ed5892f67947eb2289dd6439/raw/86244b02c7824a3ca32ce01b2649f5d9badd2e49/FastTelethon.py")
+            "GET", "https://gist.githubusercontent.com/TNTcraftHIM/ca2e6066ed5892f67947eb2289dd6439/raw"
+                   "/86244b02c7824a3ca32ce01b2649f5d9badd2e49/FastTelethon.py")
         for _ in range(6):  # 最多尝试6次
             if faster.status_code == 200:
                 with open("plugins/VideoDLExtra/FastTelethon.py", "wb") as f:

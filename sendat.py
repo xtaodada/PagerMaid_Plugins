@@ -5,7 +5,7 @@
 
 imported = True
 
-import os, sys, time, traceback
+import sys, time, traceback
 
 try:
     import dateparser
@@ -15,9 +15,8 @@ except ImportError:
 import asyncio
 from pagermaid import log 
 from pagermaid.listener import listener
-from datetime import datetime
-from dateutil import parser
 
+DAY_SECS = 24 * 60 * 60
 
 def logsync(message):
     sys.stdout.writelines(f"{message}\n")
@@ -81,9 +80,9 @@ async def sendat(context):
     chat = await context.get_chat()
     args = " ".join(context.parameter).split("|")
     if not imported:
-        await context.edit("Please install dateparser first: python3 -m pip install dateparser\nAnd restart your pagermaid process")
+        await context.edit("请先安装依赖：`python3 -m pip install dateparser`\n随后，请重启 pagermaid。")
         return
-    await context.edit(f"tz data: {time.timezone} {time.tzname} {sign}{offset}")
+    await context.edit(f"debug: tz data: {time.timezone} {time.tzname} {sign}{offset}")
     if len(args) != 2:
         if args[0].find("rm ") == 0:
             # clear timer
@@ -92,7 +91,7 @@ async def sendat(context):
                 if target_id.isnumeric():
                     if len(mem) > int(target_id):
                         mem[int(target_id)] = ""
-                        await context.edit(f"id {target_id} removed.")
+                        await context.edit(f"id {target_id} successfully removed.")
                     else:
                         await context.edit("id out of range.")
                         return
@@ -112,26 +111,35 @@ async def sendat(context):
             time_str = args[0][6:]
             if time_str.find(":") != -1:
                 # then it should be absolute time
-                sleep_times = [abs(dateparser.parse(time_str, settings=settings).timestamp() - time.time()), 24 * 60 * 60]
-                index = 0
+                target = dateparser.parse(time_str, settings=settings).timestamp() % DAY_SECS
+                if target >= DAY_SECS - 6:
+                    # 太接近午夜，小概率直接 sleep 过头，特殊处理
+                    target = 0
                 mem[mem_id] = "|".join(args)
+                await sendmsg(context, chat, f"{args[0]} -> {target} sec after 00:00:00 UTC+0")
                 await context.edit(f"Registered: id {mem_id}. You can use this id to cancel the timer.")
-                while True and mem[mem_id] != "":
-                    last_time = time.time()
-                    while time.time() < last_time + sleep_times[index] and mem[mem_id] != "":
+                last_sent = 0
+                while mem[mem_id] != "":
+                    if time.time() % DAY_SECS < target:
+                        # 时间没到
                         await asyncio.sleep(2)
+                        continue
+                    if time.time() % DAY_SECS >= target and time.time() - last_sent < DAY_SECS - 10:
+                        # 时间过了，第二天的没到
+                        await asyncio.sleep(2)
+                        continue
                     if mem[mem_id] != "":
                         await sendmsg(context, chat, args[1])
-                    index = 1
+                        last_sent = time.time()
                 mem[mem_id] = ""
                 return
-            sleep_time = abs(dateparser.parse(time_str, settings=settings).timestamp() - time.time())
+            sleep_time = time.time() - dateparser.parse(time_str, settings=settings).timestamp()
             if sleep_time < 5:
                 await context.edit(f"Sleep time too short. Should be longer than 5 seconds. Got {sleep_time}") 
                 return
             mem[mem_id] = "|".join(args)
             await context.edit(f"Registered: id {mem_id}. You can use this id to cancel the timer.")
-            while True and mem[mem_id] != "":
+            while mem[mem_id] != "":
                 last_time = time.time()
                 while time.time() < last_time + sleep_time and mem[mem_id] != "":
                     await asyncio.sleep(2)
@@ -144,22 +152,32 @@ async def sendat(context):
             rest = " ".join(args[0][1:].split(" ")[1:])
             if rest.find(":") != -1:
                 # then it should be absolute time
-                sleep_times = [abs(dateparser.parse(rest, settings=settings).timestamp() - time.time()), 24 * 60 * 60]
+                target = dateparser.parse(rest, settings=settings).timestamp() % DAY_SECS
+                if target >= DAY_SECS - 6:
+                    # 太接近午夜，小概率直接 sleep 过头，特殊处理
+                    target = 0
                 count = 0
                 mem[mem_id] = "|".join(args)
                 await context.edit(f"Registered: id {mem_id}. You can use this id to cancel the timer.")
+                last_sent = 0
                 while count <= times and mem[mem_id] != "":
-                    last_time = time.time()
-                    while time.time() < last_time + sleep_times[0 if count == 0 else 1] and mem[mem_id] != "":
+                    if time.time() % DAY_SECS < target:
+                        # 时间没到
                         await asyncio.sleep(2)
+                        continue
+                    if time.time() % DAY_SECS >= target and time.time() - last_sent < DAY_SECS - 10:
+                        # 时间过了，第二天的没到
+                        await asyncio.sleep(2)
+                        continue
                     if mem[mem_id] != "":
                         await sendmsg(context, chat, args[1])
                         count += 1
+                        last_sent = time.time()
                 mem[mem_id] = ""
                 return
-            sleep_time = abs(dateparser.parse(rest, settings=settings).timestamp() - time.time())
+            sleep_time = time.time() - dateparser.parse(rest, settings=settings).timestamp()
             if sleep_time < 5:
-                await context.edit("Sleep time too short. Should be longer than 5 seconds.")
+                await context.edit(f"Sleep time too short. Should be longer than 5 seconds. got {sleep_time}")
                 return
             count = 0
             mem[mem_id] = "|".join(args)
@@ -191,15 +209,14 @@ async def sendat(context):
             return
 
         # absolute time
-        dt = parser.parse(args[0])
-        delta = dt.timestamp() - time.time()
-        if delta < 3:
+        target_time = dateparser.parse(args[0], settings=settings).timestamp()
+        if target_time - time.time() < 3:
             await context.edit("Target time before now.")
             return
         mem[mem_id] = "|".join(args)
+
         await context.edit(f"Registered: id {mem_id}. You can use this id to cancel the timer.")
-        while delta > 0 and mem[mem_id] != "":
-            delta = dt.timestamp() - time.time()
+        while target_time - time.time() > 0 and mem[mem_id] != "":
             await asyncio.sleep(2)
         if mem[mem_id] != "":
             await sendmsg(context, chat, args[1])
