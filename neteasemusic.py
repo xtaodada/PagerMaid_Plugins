@@ -28,8 +28,7 @@ async def nem(context):
     proxynum = 0
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063',
                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9", "X-Real-IP": "223.252.199.66"}
-    proxy = [{'http': 'http://192.210.137.108:8080', 'https': 'http://192.210.137.108:8080'}, {'http': 'http://music.lolico.me:39000', 'https': 'http://music.lolico.me:39000'}, {'http': 'http://aimer.one:2333',
-                                                                                                                                                                                  'https': 'http://aimer.one:2333'}, {'http': 'http://fs2.ilogic.net.cn:5200', 'https': 'http://fs2.ilogic.net.cn:5200'}, {'http': 'http://64.64.250.246:8080', 'https': 'http://64.64.250.246:8080'}]
+    proxy = [{'http': 'http://music.lolico.me:39000', 'https': 'http://music.lolico.me:39000'}, {'http': 'http://netease.unlock.feiwuis.me:6958', 'https': 'https://netease.unlock.feiwuis.me:6958'}]
     helptext = "**使用方法:** `-nem` `<指令>` `<关键词>`\n\n指令s为搜索，p为点歌，id为歌曲ID点歌，r为随机热歌(无关键词)\n搜索在s后添加数字如`-nem` `s8` `<关键词>`调整结果数量\n搜索灰色歌曲请尽量**指定歌手**\n可回复搜索结果消息`-nem` `p` `<歌曲数字序号>`点歌"
     apifailtext = "出错了呜呜呜 ~ 试了好多好多次都无法访问到 API 服务器 。"
 
