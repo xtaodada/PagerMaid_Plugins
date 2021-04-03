@@ -2,10 +2,10 @@
     "list": [
         {
             "name": "rate",
-            "version": "1.211",
+            "version": "1.22",
             "section": "daily",
             "maintainer": "fruitymelon",
-            "size": "1.8 kb",
+            "size": "2.3 kb",
             "supported": true,
             "des-short": "汇率转换。",
             "des": "这个人很懒，什么都没有留下。"
