@@ -20,10 +20,11 @@ from pagermaid.utils import execute
 imported = True
 try:
     from binance.client import Client
+    import xmltodict
 except ImportError:
     imported = False
 
-API = "https://api.exchangeratesapi.io/latest"
+API = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
 CURRENCIES = []
 DATA = {}
 BINANCE_API_KEY = '8PDfQ2lSIyHPWdNAHNIaIoNy3MiiMuvgwYADbmtsKo867B0xnIhIGjPULsOtvMRk'
@@ -35,14 +36,15 @@ def init():
     with urllib.request.urlopen(API) as response:
         result = response.read()
         try:
-            global DATA
-            DATA = json.loads(result)
-            DATA["rates"][DATA["base"]] = 1.0
-            for key in list(enumerate(DATA["rates"])):
-                CURRENCIES.append(key[1])
+            global CURRENCIES, DATA
+            rate_data = xmltodict.parse(result)
+            rate_data = rate_data['gesmes:Envelope']['Cube']['Cube']['Cube']
+            for i in rate_data:
+                CURRENCIES.append(i['@currency'])
+                DATA[i['@currency']] = float(i['@rate'])
             CURRENCIES.sort()
-        except JSONDecodeError as _e:
-            raise _e
+        except Exception as e:
+            raise e
 
 
 @listener(is_plugin=True,
@@ -53,15 +55,17 @@ def init():
 async def coin(context):
     """ coin change """
     if not imported:
-        await context.edit("支持库python-binance未安装...\n正在尝试自动安装...")
+        await context.edit("支持库 `python-binance` `xmltodict` 未安装...\n正在尝试自动安装...")
         await execute('python3 -m pip install python-binance')
+        await execute('python3 -m pip install xmltodict')
         await sleep(10)
         result = await execute('python3 show python-binance')
-        if len(result) > 0:
-            await context.edit('支持库python-binance安装成功...\n正在尝试自动重启...')
+        result1 = await execute('python3 show xmltodict')
+        if len(result) > 0 and len(result1) > 0:
+            await context.edit('支持库 `python-binance` `xmltodict` 安装成功...\n正在尝试自动重启...')
             await context.client.disconnect()
         else:
-            await context.edit("自动安装失败..请尝试手动安装 `python3 -m pip install python-binance`\n随后，请重启 PagerMaid")
+            await context.edit("自动安装失败..请尝试手动安装 `python3 -m pip install python-binance`\n\n`python3 -m pip install xmltodict`\n随后，请重启 PagerMaid")
         return
     init()
     action = context.arguments.split()
@@ -80,16 +84,16 @@ async def coin(context):
         price = 0.0
 
         if ((CURRENCIES.count(_from) != 0) and (CURRENCIES.count(_to) != 0)):
-            text = f'{action[0]} {action[1].upper().strip()} = {round(float(action[0])*DATA["rates"][_to]/DATA["rates"][_from], 2)} {action[2].upper().strip()}'
+            text = f'{action[0]} {action[1].upper().strip()} = {round(float(action[0])*DATA[_to]/DATA[_from], 2)} {action[2].upper().strip()}'
 
         else:
             if CURRENCIES.count(_from) != 0:
-                number = number * DATA["rates"]["USD"] / DATA["rates"][_from]
+                number = number * DATA["USD"] / DATA[_from]
                 _from = 'USDT'
                 front_text = f'{action[0]} {action[1]} = \n'
 
             if CURRENCIES.count(_to) != 0:
-                _to_USD_rate = DATA["rates"][_to] / DATA["rates"]["USD"]
+                _to_USD_rate = DATA[_to] / DATA["USD"]
                 _to = 'USDT'
 
             for _a in prices:
@@ -97,7 +101,7 @@ async def coin(context):
                     price = _a['price']
                     if _to == 'USDT':
                         if action[2].upper().strip() == 'USDT':
-                            rear_text = f'\n= {round(number * float(price) * DATA["rates"]["CNY"]/DATA["rates"]["USD"], 2)} CNY'
+                            rear_text = f'\n= {round(number * float(price) * DATA["CNY"]/DATA["USD"], 2)} CNY'
                         else:
                             rear_text = f'\n= {round(number * float(price) * _to_USD_rate, 2)} {action[2]}'
                         _r = 2
