@@ -20,7 +20,7 @@ async def ghs(context):
                 with open(filename, 'wb') as f:
                     f.write(img.content)
                 await context.edit("上传中 . . .")
-                await context.client.send_file(context.chat_id,filename,caption="来辣~⁄(⁄ ⁄•⁄ω⁄•⁄ ⁄)⁄)")
+                await context.client.send_file(context.chat_id,filename,caption="")
                 status = True
                 break #成功了就赶紧结束啦！
         except:
