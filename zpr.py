@@ -6,11 +6,11 @@ from os import remove
 
 
 @listener(is_plugin=True, outgoing=True, command="zpr",
-          description="随机小姐姐或纸片人写真")
+          description="随机美图")
 async def ghs(context):
-    await context.edit("拍小姐姐或纸片人写真中 . . .")
+    await context.edit("随机中 . . .")
     status = False
-    for _ in range (10): #最多重试10次
+    for _ in range (20): #最多重试20次
         website = random.randint(0,0)
         filename = "zpr" + str(random.random())[2:] + ".png"
         try:
@@ -19,7 +19,7 @@ async def ghs(context):
             if img.status_code == 200:
                 with open(filename, 'wb') as f:
                     f.write(img.content)
-                await context.edit("写真我拍好辣，上传中 . . .")
+                await context.edit("上传中 . . .")
                 await context.client.send_file(context.chat_id,filename,caption="来辣~⁄(⁄ ⁄•⁄ω⁄•⁄ ⁄)⁄)")
                 status = True
                 break #成功了就赶紧结束啦！
