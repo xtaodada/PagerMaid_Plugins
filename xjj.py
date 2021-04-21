@@ -10,7 +10,7 @@ from os import remove
 async def ghs(context):
     await context.edit("拍小姐姐写真中 . . .")
     status = False
-    for _ in range (10): #最多重试10次
+    for _ in range (20): #最多重试20次
         website = random.randint(0,0)
         filename = "xjj" + str(random.random())[2:] + ".png"
         try:
@@ -20,7 +20,7 @@ async def ghs(context):
                 with open(filename, 'wb') as f:
                     f.write(img.content)
                 await context.edit("写真我拍好辣，上传中 . . .")
-                await context.client.send_file(context.chat_id,filename,caption="小姐姐来辣~⁄(⁄ ⁄•⁄ω⁄•⁄ ⁄)⁄)")
+                await context.client.send_file(context.chat_id,filename,caption="")
                 status = True
                 break #成功了就赶紧结束啦！
         except:
