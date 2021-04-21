@@ -6,7 +6,7 @@ from os import remove
 
 
 @listener(is_plugin=True, outgoing=True, command="xjj",
-          description="随机图")
+          description="随机美图")
 async def ghs(context):
     await context.edit("随机中 . . .")
     status = False
