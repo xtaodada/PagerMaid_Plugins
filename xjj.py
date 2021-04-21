@@ -6,9 +6,9 @@ from os import remove
 
 
 @listener(is_plugin=True, outgoing=True, command="xjj",
-          description="随机小姐姐写真")
+          description="随机图")
 async def ghs(context):
-    await context.edit("拍小姐姐写真中 . . .")
+    await context.edit("随机中 . . .")
     status = False
     for _ in range (20): #最多重试20次
         website = random.randint(0,0)
@@ -19,7 +19,7 @@ async def ghs(context):
             if img.status_code == 200:
                 with open(filename, 'wb') as f:
                     f.write(img.content)
-                await context.edit("写真我拍好辣，上传中 . . .")
+                await context.edit("上传中 . . .")
                 await context.client.send_file(context.chat_id,filename,caption="")
                 status = True
                 break #成功了就赶紧结束啦！
