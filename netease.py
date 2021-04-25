@@ -8,12 +8,16 @@ from pagermaid.listener import listener
           description="随机一条网易云音乐评论。")
 async def netease(context):
     await context.edit("获取中 . . .")
-    req = get("https://api.oioweb.cn/api/wyypl.php")
+    try:
+        req = get("https://api.66mz8.com/api/music.163.php?format=json")
+    except:
+        await context.edit("出错了呜呜呜 ~ 无法访问到 API 服务器 。")
+        return
     if req.status_code == 200:
         data = json.loads(req.text)
-        res = data['Comment'] + '\n\n来自 @' + data[
-            'UserName'] + ' 在鸽曲 <a href="http://music.163.com/song/media/outer/url?id=' + str(data['SongId']) + '.mp3">' + \
-              data['SongName'] + ' --by' + data['SongAutho'] + '</a>' + ' 下方的评论\n\n该评论获得了' + str(data['likedCount']) + '个赞！'
+        res = data['comments'] + '\n\n来自 @' + data[
+            'nickname'] + ' 在鸽曲 <a href="' + str(data['music_url']) + '">' + \
+              data['name'] + ' --by' + data['artists_name'] + '</a>' + ' 下方的评论。'
         await context.edit(res, parse_mode='html', link_preview=True)
     else:
         await context.edit("出错了呜呜呜 ~ 无法访问到 API 服务器 。")

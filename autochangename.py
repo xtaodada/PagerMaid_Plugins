@@ -44,6 +44,6 @@ async def change_name_auto(context):
                     last_name = '%s' % cake
 
                 await bot(UpdateProfileRequest(last_name=last_name))
-        except KeyboardInterrupt:
-            await bot(UpdateProfileRequest(last_name=''))
+        except:
+            pass
         await sleep(1)

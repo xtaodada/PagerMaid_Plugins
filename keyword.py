@@ -22,15 +22,15 @@ def is_num(x: str):
 
 
 def encode(s: str):
-    return str(b64encode(s.encode('utf-8')), 'utf-8')
+    return str(b64encode(s.encode("utf-8")), "utf-8")
 
 
 def decode(s: str):
-    return str(b64decode(s.encode('utf-8')), 'utf-8')
+    return str(b64decode(s.encode("utf-8")), "utf-8")
 
 
 def random_str():
-    return str(uuid4()).replace('-', '')
+    return str(uuid4()).replace("-", "")
 
 
 def parse_rules(rules: str):
@@ -64,6 +64,13 @@ def validate(user_id: str, mode: int, user_list: list):
         return False
 
 
+def validsent(trig: int, tmp):
+    if tmp:
+        return int(tmp.get("trig", "0"))
+    else:
+        return trig
+
+
 def get_redis(db_key: str):
     byte_data = redis.get(db_key)
     byte_data = byte_data if byte_data else b""
@@ -82,7 +89,7 @@ def parse_multi(rule: str):
         p = r.split("::")
         p = [i.replace(sep_ph, "||") for i in p]
         p = [i.replace(col_ph, "::") for i in p]
-        data = ['plain', '']
+        data = ["plain", ""]
         if len(p) == 2:
             data = p
         else:
@@ -153,6 +160,28 @@ def cache_opened(chat_id, mode, trigger):
     return False
 
 
+def getsetting(chat_id, mode, trigger, name, default):
+    g_settings = get_redis("keyword.settings")
+    n_settings = get_redis(f"keyword.{chat_id}.settings")
+    s_settings = get_redis(f"keyword.{chat_id}.single.{mode}.{encode(trigger)}")
+    final = default
+    if s_settings.get(name, None):
+        final = s_settings[name]
+    elif n_settings.get(name, None):
+        final = n_settings[name]
+    elif g_settings.get(name, None):
+        final = g_settings[name]
+    return final
+
+
+async def aexec(code, *args, **kwargs):
+    exec(
+        f"async def func(*args, **kwargs):" +
+        "".join(f"\n {p}" for p in code.split("\n"))
+    )
+    return await locals()["func"](*args, **kwargs)
+
+
 async def del_msg(context, t_lim):
     await asyncio.sleep(t_lim)
     try:
@@ -194,33 +223,45 @@ async def send_reply(chat_id, trigger, mode, reply_msg, context):
             try:
                 catch_pattern = r"\$\{func_(?P<str>((?!\}).)+)\}"
                 count = 0
+                bracket_str = random_str()
+                re_msg = re_msg.replace(r"\}", bracket_str)
                 while re.search(catch_pattern, re_msg) and count < 20:
-                    func_name = re.search(catch_pattern, re_msg).group("str")
+                    func_exec = re.search(catch_pattern, re_msg).group("str")
                     try:
-                        func_data = await(import_module(f"data.keyword_func.{func_name}")).main(context)
-                        chdir(working_dir)
+                        func_name = func_exec
+                        func_args = None
+                        if func_exec.strip().endswith(")"):
+                            arg_index = func_exec.find("(")
+                            func_name = func_exec[0:arg_index].replace(bracket_str, "}")
+                            func_args = func_exec[arg_index + 1:-1].replace(bracket_str, "}")
+                        module = f"import_module('data.keyword_func.{func_name}').main"
+                        parameter = f"context{', %s' % func_args if func_args else ''}"
+                        func_data = await eval(f"{module}({parameter})")
                     except:
                         func_data = "[RE]"
-                    re_msg = re_msg.replace("${func_%s}" % func_name, str(func_data))
+                    chdir(working_dir)
+                    re_msg = re_msg.replace("${func_%s}" % func_exec, str(func_data))
                     count += 1
+                re_msg = re_msg.replace(bracket_str, "}")
                 for k, v in replace_data.items():
                     re_type = re_type.replace(f"${k}", str(v))
                     re_msg = re_msg.replace(f"${k}", str(v))
                 type_parse = re_type.split(",")
+                edit_id = -1
                 for s in type_parse:
                     if len(s) >= 5 and "ext_" == s[0:4] and is_num(s[4:]):
                         chat_id = int(s[4:])
                         type_parse.remove(s)
-                        break
+                    elif len(s) >= 6 and "edit_" == s[0:5] and is_num(s[5:]):
+                        edit_id = int(s[5:])
+                        type_parse.remove(s)
                 if ("file" in type_parse or "photo" in type_parse) and len(re_msg.split()) >= 2:
                     if could_send_msg:
                         update_last_time = True
                         re_data = re_msg.split(" ")
-                        cache_exists, cache_path = has_cache(chat_id, mode, trigger, re_data[0])
+                        cache_exists, filename = has_cache(chat_id, mode, trigger, re_data[0])
                         is_opened = cache_opened(chat_id, mode, trigger)
-                        filename = "/tmp/" + re_data[0]
                         if is_opened:
-                            filename = cache_path
                             if not cache_exists:
                                 if re_data[1][0:7] == "file://":
                                     re_data[1] = re_data[1][7:]
@@ -240,51 +281,115 @@ async def send_reply(chat_id, trigger, mode, reply_msg, context):
                         reply_to = None
                         if "reply" in type_parse:
                             reply_to = context.id
-                        message_list.append(await bot.send_file(chat_id, filename,
-                                            reply_to=reply_to, force_document=("file" in type_parse)))
+                            redir = getsetting(chat_id, mode, trigger, "redir", "0")
+                            reply = await context.get_reply_message()
+                            if redir == "1" and reply:
+                                reply_to = reply.id
+                        if edit_id == -1:
+                            message_list.append(await bot.send_file(
+                                chat_id,
+                                filename,
+                                reply_to=reply_to,
+                                force_document=("file" in type_parse)
+                            ))
+                        else:
+                            edit_file = await bot.upload_file(filename)
+                            message_list[edit_id] = await message_list[edit_id].edit(
+                                file=edit_file,
+                                force_document=("file" in type_parse)
+                            )
                         if not is_opened:
                             remove(filename)
                 elif ("tgfile" in type_parse or "tgphoto" in type_parse) and len(re_msg.split()) >= 2:
                     if could_send_msg:
                         update_last_time = True
-                        if not path.exists("/tmp"):
-                            mkdir("/tmp")
-                        re_data = re_msg.split()
-                        file_name = "/tmp/" + re_data[0]
+                        re_data = re_msg.split(" ")
+                        re_data[0] = " ".join(re_data[0:-1])
+                        re_data[1] = re_data[-1:][0].split("/")[-2:]
+                        cache_exists, filename = has_cache(chat_id, mode, trigger, re_data[0])
+                        is_opened = cache_opened(chat_id, mode, trigger)
                         _data = BytesIO()
-                        re_data[1] = re_data[1].split("/")[-2:]
                         try:
                             msg_chat_id = int(re_data[1][0])
                         except:
                             async with bot.conversation(re_data[1][0]) as conversation:
                                 msg_chat_id = conversation.chat_id
                         msg_id_inchat = int(re_data[1][1])
-                        await bot.send_message(chat_id, f"{msg_chat_id, msg_id_inchat}")
-                        media_msg = (await bot.get_messages(msg_chat_id, msg_id_inchat))[0]
-                        _data = BytesIO()
-                        if media_msg and media_msg.media:
-                            if "tgfile" in type_parse:
-                                await bot.download_file(media_msg.media.document, _data)
-                            else:
-                                await bot.download_file(media_msg.photo, _data)
-                            with open(file_name, "wb") as f:
-                                f.write(_data.getvalue())
-                            reply_to = None
-                            if "reply" in type_parse:
-                                reply_to = context.id 
-                            message_list.append(await bot.send_file(chat_id, file_name, reply_to=reply_to,
-                                                force_document=("tgfile" in type_parse)))
-                            remove(file_name)
+                        if is_opened:
+                            if not cache_exists:
+                                media_msg = await bot.get_messages(msg_chat_id, ids=msg_id_inchat, offset_id=0)
+                                if media_msg and media_msg.media:
+                                    try:
+                                        await bot.download_file(media_msg.media.document, _data)
+                                    except:
+                                        await bot.download_file(media_msg.photo, _data)
+                                    with open(filename, "wb") as f:
+                                        f.write(_data.getvalue())
+                        else:
+                            media_msg = await bot.get_messages(msg_chat_id, ids=msg_id_inchat, offset_id=0)
+                            if media_msg and media_msg.media:
+                                try:
+                                    await bot.download_file(media_msg.media.document, _data)
+                                except:
+                                    await bot.download_file(media_msg.photo, _data)
+                                with open(filename, "wb") as f:
+                                    f.write(_data.getvalue())
+                        reply_to = None
+                        if "reply" in type_parse:
+                            reply_to = context.id
+                            redir = getsetting(chat_id, mode, trigger, "redir", "0")
+                            reply = await context.get_reply_message()
+                            if redir == "1" and reply:
+                                reply_to = reply.id
+                        if edit_id == -1:
+                            message_list.append(await bot.send_file(
+                                chat_id,
+                                filename,
+                                reply_to=reply_to,
+                                force_document=("tgfile" in type_parse)
+                            ))
+                        else:
+                            edit_file = await bot.upload_file(filename)
+                            message_list[edit_id] = await message_list[edit_id].edit(
+                                file=edit_file,
+                                force_document=("tgfile" in type_parse)
+                            )
+                        if not is_opened:
+                            remove(filename)
                 elif "plain" in type_parse:
                     if could_send_msg:
                         update_last_time = True
-                        message_list.append(await bot.send_message(chat_id, re_msg,
-                                               link_preview=("nopreview" not in type_parse)))
+                        if edit_id == -1:
+                            message_list.append(await bot.send_message(
+                                chat_id,
+                                re_msg,
+                                link_preview=("nopreview" not in type_parse)
+                            ))
+                        else:
+                            message_list[edit_id] = await message_list[edit_id].edit(
+                                re_msg,
+                                link_preview=("nopreview" not in type_parse)
+                            )
                 elif "reply" in type_parse and chat_id == real_chat_id:
                     if could_send_msg:
                         update_last_time = True
-                        message_list.append(await bot.send_message(chat_id, re_msg, reply_to=context.id,
-                                               link_preview=("nopreview" not in type_parse)))
+                        if edit_id == -1:
+                            reply_to = context.id
+                            redir = getsetting(chat_id, mode, trigger, "redir", "0")
+                            reply = await context.get_reply_message()
+                            if redir == "1" and reply:
+                                reply_to = reply.id
+                            message_list.append(await bot.send_message(
+                                chat_id,
+                                re_msg,
+                                reply_to=reply_to,
+                                link_preview=("nopreview" not in type_parse)
+                            ))
+                        else:
+                            message_list[edit_id] = await message_list[edit_id].edit(
+                                re_msg,
+                                link_preview=("nopreview" not in type_parse)
+                            )
                 elif "op" in type_parse:
                     if re_msg == "delete":
                         await context.delete()
@@ -293,6 +398,15 @@ async def send_reply(chat_id, trigger, mode, reply_msg, context):
                         await asyncio.sleep(float(sleep_time))
                     elif re_msg.split()[0] == "delself" and len(re_msg.split()) == 2:
                         await message_list[int(re_msg.split()[1])].delete()
+                    elif re_msg.split()[0] == "trigger" and len(re_msg.split()) == 2:
+                        await auto_reply(message_list[int(re_msg.split()[1])])
+                    elif re_msg.split("\n")[0].startswith("exec") and len(re_msg.split("\n")) >= 2:
+                        args = [
+                            "\n".join(re_msg.split("\n")[1:]),
+                            " ".join(re_msg.split("\n")[0].split(" ")[1:])
+                        ]
+                        await eval(f"aexec(args[0]{f', {args[1]}' if args[1] else ''})")
+                        chdir(working_dir)
             except:
                 pass
             chat_id = real_chat_id
@@ -435,28 +549,33 @@ async def reply_set(context):
             redis_data = f"keyword.{chat_id}.single.{params[0]}.{rule_data}"
             del params[0:2]
     settings_dict = get_redis(redis_data)
-    cmd_list = ["help", "mode", "list", "freq", "show", "cache", "clear"]
     cmd_dict = {
         "help": (1,),
         "mode": (2,),
         "list": (2, 3),
         "freq": (2,),
+        "trig": (2,),
         "show": (1,),
         "cache": (2,),
+        "redir": (2,),
+        "status": (2,),
         "clear": (1,)
     }
     if len(params) < 1:
         await context.edit("参数错误")
         await del_msg(context, 5)
         return
-    if params[0] in cmd_list and len(params) in cmd_dict[params[0]]:
+    if params[0] in cmd_dict and len(params) in cmd_dict[params[0]]:
         if params[0] == "help":
             await context.edit('''
 `-replyset show` 或
 `-replyset clear` 或
 `-replyset mode <0/1/clear>` ( 0 表示黑名单，1 表示白名单 ) 或
 `-replyset list <add/del/show/clear> [user_id]` 或
-`-replyset freq <float/clear>` ( float 表示一个正的浮点数，clear 为清除 )。
+`-replyset freq <float/clear>` ( float 表示一个正的浮点数，clear 为清除 ) 或
+`-replyset trig <0/1/clear>` ( 0 为关闭，1 为开启，clear 为清除 ) 或
+`-replyset cache <0/1/clear>` ( 0 为关闭，1 为开启 ) 或
+`-replyset status <0/1/clear>` ( 0 为关闭，1 为开启 ) 。
 在 `-replyset` 后面加上 `global` 即为全局设置。
 在 `-replyset` 后面加上 `plain/regex` 规则序号 可以单独设置一条规则。''')
             await del_msg(context, 15)
@@ -466,7 +585,10 @@ async def reply_set(context):
                 "mode": "未设置 (默认黑名单)",
                 "list": "未设置 (默认为空)",
                 "freq": "未设置 (默认为 1)",
-                "cache": "未设置 (默认关闭)"
+                "trig": "未设置 (默认关闭)",
+                "cache": "未设置 (默认关闭)",
+                "redir": "未设置 (默认关闭)",
+                "status": "未设置 (默认开启)"
             }
             msg = "Settings: \n"
             for k, v in defaults.items():
@@ -558,30 +680,58 @@ async def reply_set(context):
                 await del_msg(context, 5)
                 return
         elif params[0] == "freq":
-            if params[1] == "clear":
-                if "freq" in settings_dict:
-                    del settings_dict["freq"]
-                redis.set(redis_data, save_rules(settings_dict, None))
-                await context.edit("清除成功")
-                await del_msg(context, 5)
-                return
-            else:
-                try:
-                    tmp = float(params[1])
-                    if tmp > 0:
-                        settings_dict["freq"] = params[1]
-                        redis.set(redis_data, save_rules(settings_dict, None))
-                        await context.edit("设置成功")
-                        await del_msg(context, 5)
-                        return
-                    else:
+            if redis_data == f"keyword.{chat_id}.settings":
+                if params[1] == "clear":
+                    if "freq" in settings_dict:
+                        del settings_dict["freq"]
+                    redis.set(redis_data, save_rules(settings_dict, None))
+                    await context.edit("清除成功")
+                    await del_msg(context, 5)
+                    return
+                else:
+                    try:
+                        tmp = float(params[1])
+                        if tmp > 0:
+                            settings_dict["freq"] = params[1]
+                            redis.set(redis_data, save_rules(settings_dict, None))
+                            await context.edit("设置成功")
+                            await del_msg(context, 5)
+                            return
+                        else:
+                            await context.edit("频率需为正数")
+                            await del_msg(context, 5)
+                            return
+                    except:
                         await context.edit("频率需为正数")
                         await del_msg(context, 5)
                         return
-                except:
-                    await context.edit("频率需为正数")
-                    await del_msg(context, 5)
-                    return
+            else:
+                await context.edit("此项无法使用全局设置和单独设置")
+                return
+        elif params[0] == "trig":
+            if params[1] == "0":
+                settings_dict["trig"] = "0"
+                redis.set(redis_data, save_rules(settings_dict, None))
+                await context.edit("已关闭自我触发")
+                await del_msg(context, 5)
+                return
+            elif params[1] == "1":
+                settings_dict["trig"] = "1"
+                redis.set(redis_data, save_rules(settings_dict, None))
+                await context.edit("已开启自我触发")
+                await del_msg(context, 5)
+                return
+            elif params[1] == "clear":
+                if "trig" in settings_dict:
+                    del settings_dict["trig"]
+                redis.set(redis_data, save_rules(settings_dict, None))
+                await context.edit("已清除自我触发设置")
+                await del_msg(context, 5)
+                return
+            else:
+                await context.edit("参数错误")
+                await del_msg(context, 5)
+                return
         elif params[0] == "cache":
             if params[1] == "0":
                 settings_dict["cache"] = "0"
@@ -614,8 +764,60 @@ async def reply_set(context):
                 await del_msg(context, 5)
                 return
             else:
-                await context.edit(f"参数错误")
+                await context.edit("参数错误")
                 await del_msg(context, 5)
+                return
+        elif params[0] == "redir":
+            if params[1] == "0":
+                settings_dict["redir"] = "0"
+                redis.set(redis_data, save_rules(settings_dict, None))
+                await context.edit("已关闭回复穿透")
+                await del_msg(context, 5)
+                return
+            elif params[1] == "1":
+                settings_dict["redir"] = "1"
+                redis.set(redis_data, save_rules(settings_dict, None))
+                await context.edit("已开启回复穿透")
+                await del_msg(context, 5)
+                return
+            elif params[1] == "clear":
+                if "redir" in settings_dict:
+                    del settings_dict["redir"]
+                redis.set(redis_data, save_rules(settings_dict, None))
+                await context.edit("已清除回复穿透设置")
+                await del_msg(context, 5)
+                return
+            else:
+                await context.edit("参数错误")
+                await del_msg(context, 5)
+                return
+        elif params[0] == "status":
+            if redis_data == f"keyword.{chat_id}.settings":
+                if params[1] == "0":
+                    settings_dict["status"] = "0"
+                    redis.set(redis_data, save_rules(settings_dict, None))
+                    await context.edit("已关闭此聊天的关键词回复")
+                    await del_msg(context, 5)
+                    return
+                elif params[1] == "1":
+                    settings_dict["status"] = "1"
+                    redis.set(redis_data, save_rules(settings_dict, None))
+                    await context.edit("已开启此聊天的关键词回复")
+                    await del_msg(context, 5)
+                    return
+                elif params[1] == "clear":
+                    if "status" in settings_dict:
+                        del settings_dict["status"]
+                    redis.set(redis_data, save_rules(settings_dict, None))
+                    await context.edit("已清除此设置")
+                    await del_msg(context, 5)
+                    return
+                else:
+                    await context.edit("参数错误")
+                    await del_msg(context, 5)
+                    return
+            else:
+                await context.edit("此项无法使用全局设置和单独设置")
                 return
         elif params[0] == "clear":
             redis.delete(redis_data)
@@ -699,14 +901,14 @@ async def funcset(context):
                 func_online = \
                     json.loads(
                         requests.get("https://raw.githubusercontent.com/xtaodada/PagerMaid_Plugins/master"
-                                    "/keyword_func/list.json").content)['list']
+                                    "/keyword_func/list.json").content)["list"]
                 if func_name in func_online:
                     func_directory = f"data/keyword_func/"
                     file_path = func_name + ".py"
                     func_content = requests.get(
                         f"https://raw.githubusercontent.com/xtaodada/PagerMaid_Plugins/master"
                         f"/keyword_func/{func_name}.py").content
-                    with open(file_path, 'wb') as f:
+                    with open(file_path, "wb") as f:
                         f.write(func_content)
                     if path.exists(f"{func_directory}{file_path}"):
                         remove(f"{func_directory}{file_path}")
@@ -722,11 +924,11 @@ async def funcset(context):
                 return
             elif len(cmd) == 1 and cmd[0] == "help":
                 await context.edit("""
-    `-funcset new <func_name>` (要回复带有文件的信息或自己附带文件)
-    `-funcset install <func_name>` （云端获取函数文件）
-    `-funcset del <func_name>`
-    `-funcset show <func_name>` (发送文件)
-    `-funcset ls` (列出所有函数)""")
+`-funcset new <func_name>` (要回复带有文件的信息或自己附带文件)
+`-funcset install <func_name>` （云端获取函数文件）
+`-funcset del <func_name>`
+`-funcset show <func_name>` (发送文件)
+`-funcset ls` (列出所有函数)""")
             else:
                 await context.edit("参数错误")
                 await del_msg(context, 5)
@@ -739,24 +941,62 @@ async def funcset(context):
         pass
 
 
-@listener(incoming=True, ignore_edited=True)
+@listener(outgoing=True, command="keydata",
+          description="设置规则数据",
+          parameters="dump / load")
+async def setdata(context):
+    try:
+        chat_id = context.chat_id
+        params = context.parameter
+        if params[0] == "dump":
+            data = redis.get(f"keyword.{chat_id}.{params[1]}")
+            if not data:
+                await context.edit("无规则数据")
+                await del_msg(context, 5)
+                return
+            data = str(data, "ascii")
+            await context.edit(data)
+            return
+        elif params[0] == "load":
+            redis.set(f"keyword.{chat_id}.{params[1]}", params[2])
+            await context.edit("设置成功")
+            await del_msg(context, 5)
+            return
+        else:
+            await context.edit("参数错误")
+            await del_msg(context, 5)
+            return
+    except:
+        await context.edit("运行错误")
+        await del_msg(context, 5)
+        return
+
+
+@listener(incoming=True, outgoing=True, ignore_edited=True)
 async def auto_reply(context):
+    global read_context
     if not redis_status():
         return
     try:
         chat_id = context.chat_id
         sender_id = context.sender_id
-        if f"{chat_id}:{context.id}" not in read_context:
+        if (chat_id, context.id) not in read_context:
+            n_settings = get_redis(f"keyword.{chat_id}.settings")
+            if n_settings.get("status", "1") == "0":
+                return
+            self_id = (await bot.get_me()).id
+            g_settings = get_redis("keyword.settings")
             plain_dict = get_redis(f"keyword.{chat_id}.plain")
             regex_dict = get_redis(f"keyword.{chat_id}.regex")
-            g_settings = get_redis("keyword.settings")
-            n_settings = get_redis(f"keyword.{chat_id}.settings")
             g_mode = g_settings.get("mode", None)
             n_mode = n_settings.get("mode", None)
             mode = "0"
             g_list = g_settings.get("list", None)
             n_list = n_settings.get("list", None)
             user_list = []
+            g_trig = g_settings.get("trig", None)
+            n_trig = n_settings.get("trig", None)
+            trig = "0"
             if g_mode and n_mode:
                 mode = n_mode
             elif g_mode or n_mode:
@@ -765,17 +1005,22 @@ async def auto_reply(context):
                 user_list = n_list
             elif g_list or n_list:
                 user_list = g_list if g_list else n_list
+            if g_trig and n_trig:
+                trig = n_trig
+            elif g_trig or n_trig:
+                trig = g_trig if g_trig else n_trig
             send_text = context.text
             if not send_text:
                 send_text = ""
+            self_sent = self_id == sender_id
             for k, v in plain_dict.items():
                 if k in send_text:
                     tmp = get_redis(f"keyword.{chat_id}.single.plain.{encode(k)}")
                     could_reply = validate(str(sender_id), int(mode), user_list)
                     if tmp:
                         could_reply = validate(str(sender_id), int(tmp.get("mode", "0")), tmp.get("list", []))
-                    if could_reply:
-                        read_context[f"{chat_id}:{context.id}"] = None
+                    if could_reply and (not self_sent or validsent(int(trig), tmp)):
+                        read_context[(chat_id, context.id)] = None
                         await send_reply(chat_id, k, "plain", parse_multi(v), context)
             for k, v in regex_dict.items():
                 pattern = re.compile(k)
@@ -784,8 +1029,8 @@ async def auto_reply(context):
                     could_reply = validate(str(sender_id), int(mode), user_list)
                     if tmp:
                         could_reply = validate(str(sender_id), int(tmp.get("mode", "0")), tmp.get("list", []))
-                    if could_reply:
-                        read_context[f"{chat_id}:{context.id}"] = None
+                    if could_reply and (not self_sent or validsent(int(trig), tmp)):
+                        read_context[(chat_id, context.id)] = None
                         catch_pattern = r"\$\{regex_(?P<str>((?!\}).)+)\}"
                         count = 0
                         while re.search(catch_pattern, v) and count < 20:
@@ -799,7 +1044,5 @@ async def auto_reply(context):
                             v = v.replace("${regex_%s}" % group_name, capture_data)
                             count += 1
                         await send_reply(chat_id, k, "regex", parse_multi(v), context)
-        else:
-            del read_context[f"{chat_id}:{context.id}"]
     except:
         pass

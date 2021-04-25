@@ -89,3 +89,5 @@
     - `neteasemusic` : 网易云搜歌/随机热歌/点歌。
     - `videodl` : 下载YTB/B站视频。
     - `transfer` : 上传和下载文件。
+    - `xjj` : 随机小姐姐写真。
+    - `zpr` : 随机小姐姐或纸片人写真。

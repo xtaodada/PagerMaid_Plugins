@@ -1,11 +1,7 @@
 import random
 import string
 
-async def main(context):
-    try:
-        length = int(context.text.split()[1])
-    except:
-        length = 8
+async def main(context, length):
     if length > 1000:
         length = 100
     s = ""

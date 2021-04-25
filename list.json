@@ -22,7 +22,7 @@
         },
         {
             "name": "autochangename",
-            "version": "1.0",
+            "version": "1.01",
             "section": "profile",
             "maintainer": "xtaodada",
             "size": "2.1 kb",
@@ -42,13 +42,13 @@
         },
         {
             "name": "sendat",
-            "version": "1.2",
+            "version": "1.3",
             "section": "chat",
             "maintainer": "fruitymelon",
-            "size": "13.1 kb",
+            "size": "15.0 kb",
             "supported": true,
             "des-short": "定时发送消息。",
-            "des": "这个人很懒，什么都没有留下。"
+            "des": "命令：sendat，详情见 -help sendat"
         },
         {
             "name": "weather",
@@ -62,13 +62,13 @@
         },
         {
             "name": "xtao-some",
-            "version": "1.13",
+            "version": "1.154",
             "section": "daily",
             "maintainer": "xtaodada",
             "size": "18.8 kb",
             "supported": true,
             "des-short": "一大堆便民功能。",
-            "des": "超多功能 例如 -ip -ipping -guess 等。"
+            "des": "超多功能 例如 -ip -ipping -guess -t -getdel 等。"
         },
         {
             "name": "yb-dl",
@@ -92,17 +92,17 @@
         },
         {
             "name": "rate",
-            "version": "1.2",
+            "version": "1.4",
             "section": "daily",
             "maintainer": "fruitymelon",
-            "size": "1.8 kb",
+            "size": "3.4 kb",
             "supported": true,
             "des-short": "汇率转换。",
-            "des": "这个人很懒，什么都没有留下。"
+            "des": "汇率转换插件，数据每日更新"
         },
         {
             "name": "netease",
-            "version": "1.3",
+            "version": "1.31",
             "section": "daily",
             "maintainer": "xtaodada、KorenKrita",
             "size": "0.7 kb",
@@ -192,7 +192,7 @@
         },
         {
             "name": "whois",
-            "version": "1.11",
+            "version": "1.12",
             "section": "daily",
             "maintainer": "KorenKrita",
             "size": "1.1 kb",
@@ -202,7 +202,7 @@
         },
         {
             "name": "eat",
-            "version": "1.0",
+            "version": "1.01",
             "section": "profile",
             "maintainer": "SF_PICK",
             "size": "6.4 kb",
@@ -282,17 +282,17 @@
         },
         {
             "name": "neteasemusic",
-            "version": "4.2",
+            "version": "4.3",
             "section": "daily",
             "maintainer": "TNTcraftHIM",
-            "size": "29.1 kb",
+            "size": "28.8 kb",
             "supported": true,
             "des-short": "网易云搜歌/随机热歌/点歌",
             "des": "可以在线搜索并且快速点歌（可回复信息点歌），也支持随机热歌功能，支持解锁VIP/灰色歌曲。命令：nem。"
         },
         {
             "name": "killallmembers",
-            "version": "1.01",
+            "version": "1.03",
             "section": "chat",
             "maintainer": "Pentacene",
             "size": "idk",
@@ -302,7 +302,7 @@
         },
         {
             "name": "videodl",
-            "version": "0.1",
+            "version": "0.11",
             "section": "daily",
             "maintainer": "TNTcraftHIM",
             "size": "5.3 kb",
@@ -338,7 +338,7 @@
             "size": "4.0 kb",
             "supported": true,
             "des-short": "vip 捐赠用户功能",
-            "des": "命令：天气：weather Pixiv：pixiv。"
+            "des": "命令：天气：weather Pixiv：pixiv。与 weather 插件冲突"
         },
         {
             "name": "calculator",
@@ -352,7 +352,7 @@
         },
         {
             "name": "paolu",
-            "version": "1.00",
+            "version": "1.01",
             "section": "chat",
             "maintainer": "Pentacene",
             "size": "1.0 kb",
@@ -361,14 +361,24 @@
             "des": "paolu。"
         },
         {
-            "name": "keyword",
-            "version": "2.52",
+            "name": "autoreplysticker",
+            "version": "1.12",
             "section": "chat",
-            "maintainer": "c3b2a, xtaodada",
-            "size": "33.4 kb",
+            "maintainer": "Pentacene",
+            "size": "8.3 kb",
             "supported": true,
-            "des-short": "群组关键词自动回复插件",
-            "des": "命令: keyword, replyset, funcset。"
+            "des-short": "自动回复sticker",
+            "des": "-ars"
+        },
+        {
+            "name": "keyword",
+            "version": "2.63",
+            "section": "chat",
+            "maintainer": "c3b2a,xtaodada",
+            "size": "44.0 kb",
+            "supported": true,
+            "des-short": "关键词自动回复插件。",
+            "des": "命令: keyword, keydata, replyset, funcset。"
         },
         {
             "name": "msgst",
@@ -409,6 +419,36 @@
             "supported": true,
             "des-short": "随机小姐姐或纸片人写真。",
             "des": "命令: xjj"
+        },
+        {
+            "name": "forcesend",
+            "version": "1.0",
+            "section": "chat",
+            "maintainer": "fruitymelon",
+            "size": "1.3 kb",
+            "supported": true,
+            "des-short": "无需进群，向频道附属群内发送消息",
+            "des": "命令：forcesend"
+        },
+        {
+            "name": "ghs",
+            "version": "1.0",
+            "section": "chat",
+            "maintainer": "akun",
+            "size": "1.3 kb",
+            "supported": true,
+            "des-short": "发送ghs获取一张色图",
+            "des": "命令：ghs"
+        },
+        {
+            "name": "bc",
+            "version": "1.1",
+            "section": "chat",
+            "maintainer": "Pentacene",
+            "size": "4.4 kb",
+            "supported": true,
+            "des-short": "查询含虚拟货币在内的货币价格",
+            "des": "命令：bc 数量 货币1 货币2"
         }
     ]
 }

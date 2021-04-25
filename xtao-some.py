@@ -1,11 +1,10 @@
 """ Pagermaid plugin base. """
 import json, requests, re
-from translate import Translator as trans
 from urllib.parse import urlparse
 from pagermaid import bot, log
 from pagermaid.listener import listener, config
 from pagermaid.utils import clear_emojis, obtain_message, attach_log
-from telethon.tl.types import ChannelParticipantsAdmins
+from telethon.errors import ChatAdminRequiredError
 from os import remove
 
 
@@ -38,23 +37,6 @@ async def guess(context):
         await context.edit("没有匹配到拼音首字母缩写")
 
 
-@listener(is_plugin=True, outgoing=True, command="admin",
-          description="一键 AT 本群管理员（仅在群组中有效）")
-async def admin(context):
-    await context.edit('正在获取管理员列表中...')
-    chat = await context.get_chat()
-    try:
-        admins = await context.client.get_participants(chat, filter=ChannelParticipantsAdmins)
-    except:
-        await context.edit('请在群组中使用。')
-        return True
-    admin_list = []
-    for admin in admins:
-        if admin.first_name is not None:
-            admin_list.extend(['[' + admin.first_name + '](tg://user?id=' + str(admin.id) + ')'])
-    await context.edit(' , '.join(admin_list))
-
-
 @listener(is_plugin=True, outgoing=True, command="wiki",
           description="查询维基百科词条",
           parameters="<词组>")
@@ -67,21 +49,26 @@ async def wiki(context):
         await context.edit("出错了呜呜呜 ~ 无效的参数。")
         return
     try:
-        wiki_json = json.loads(requests.get("https://zh.wikipedia.org/w/api.php?action=query&list=search&format=json&formatversion=2&srsearch=" + message).content.decode(
-                    "utf-8"))
+        wiki_json = json.loads(requests.get("https://zh.wikipedia.org/w/api.php?action=query&list=search&format=json"
+                                            "&formatversion=2&srsearch=" + message).content.decode(
+            "utf-8"))
     except:
         await context.edit("出错了呜呜呜 ~ 无法访问到维基百科。")
         return
     if not len(wiki_json['query']['search']) == 0:
         wiki_title = wiki_json['query']['search'][0]['title']
-        wiki_content = wiki_json['query']['search'][0]['snippet'].replace('<span class=\"searchmatch\">', '**').replace('</span>', '**')
+        wiki_content = wiki_json['query']['search'][0]['snippet'].replace('<span class=\"searchmatch\">', '**').replace(
+            '</span>', '**')
         wiki_time = wiki_json['query']['search'][0]['timestamp'].replace('T', ' ').replace('Z', ' ')
         try:
             await context.edit("正在生成翻译中 . . .")
             USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
             headers = {"user-agent": USER_AGENT}
-            wiki_content = json.loads(requests.get("https://xtaolink.cn/git/m/t.php?lang=" + lang + '&text=' + clear_emojis(wiki_content), headers=headers).content.decode("utf-8"))['data']['target_text']
-            message = '词条： [' + wiki_title + '](https://zh.wikipedia.org/zh-cn/' + wiki_title + ')\n\n' + wiki_content + '...\n\n此词条最后修订于 ' + wiki_time
+            wiki_content = json.loads(requests.get("https://xtaolink.cn/git/m/t.php?lang=" + lang + '&text=' +
+                                                   clear_emojis(wiki_content), headers=headers)
+                                      .content.decode("utf-8"))['data']['target_text']
+            message = '词条： [' + wiki_title + '](https://zh.wikipedia.org/zh-cn/' + wiki_title + ')\n\n' + \
+                      wiki_content + '...\n\n此词条最后修订于 ' + wiki_time
         except ValueError:
             await context.edit("出错了呜呜呜 ~ 找不到目标语言，请更正配置文件中的错误。")
             return
@@ -106,7 +93,8 @@ async def ipinfo(context):
                 else:
                     url = url.path
                 ipinfo_json = json.loads(requests.get(
-                    "http://ip-api.com/json/" + url + "?fields=status,message,country,regionName,city,lat,lon,isp,org,as,mobile,proxy,hosting,query").content.decode(
+                    "http://ip-api.com/json/" + url + "?fields=status,message,country,regionName,city,lat,lon,isp,"
+                                                      "org,as,mobile,proxy,hosting,query").content.decode(
                     "utf-8"))
                 if ipinfo_json['status'] == 'fail':
                     pass
@@ -143,7 +131,8 @@ async def ipinfo(context):
             else:
                 url = url.path
             ipinfo_json = json.loads(requests.get(
-                "http://ip-api.com/json/" + url + "?fields=status,message,country,regionName,city,lat,lon,isp,org,as,mobile,proxy,hosting,query").content.decode(
+                "http://ip-api.com/json/" + url + "?fields=status,message,country,regionName,city,lat,lon,isp,org,as,"
+                                                  "mobile,proxy,hosting,query").content.decode(
                 "utf-8"))
             if ipinfo_json['status'] == 'fail':
                 pass
@@ -247,8 +236,9 @@ async def tx_t(context):
     try:
         await context.edit("正在生成翻译中 . . .")
         tx_json = json.loads(requests.get(
-        "https://xtaolink.cn/git/m/t.php?lang=" + lang + '&text=' + clear_emojis(message), headers=headers).content.decode(
-        "utf-8"))
+            "https://xtaolink.cn/git/m/t.php?lang=" + lang + '&text=' + clear_emojis(message),
+            headers=headers).content.decode(
+            "utf-8"))
         if not tx_json['msg'] == 'ok':
             context.edit("出错了呜呜呜 ~ 翻译出错")
             return True
@@ -263,3 +253,24 @@ async def tx_t(context):
         await attach_log(result, context.chat_id, "translation.txt", context.id)
         return
     await context.edit(result)
+
+
+@listener(is_plugin=True, outgoing=True, command="getdel",
+          description="获取当前群组/频道的死号数。")
+async def getdel(context):
+    """ PagerMaid getdel. """
+    cid = str(context.chat_id)
+    pri = cid.startswith('-100')
+    if pri:
+        member_count = 0
+        try:
+            await context.edit('遍历成员中。。。')
+            chat = await context.get_chat()
+            async for member in bot.iter_participants(chat):
+                if member.deleted:
+                    member_count += 1
+            await context.edit(f'此频道/群组的死号数：`{member_count}`')
+        except ChatAdminRequiredError:
+            await context.edit('未加入此频道。')
+    else:
+        await context.edit("请在在群组/频道发送。")

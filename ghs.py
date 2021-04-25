@@ -5,22 +5,22 @@ from pagermaid.listener import listener
 from os import remove
 
 
-@listener(is_plugin=True, outgoing=True, command="xjj",
-          description="随机小姐姐写真")
+@listener(is_plugin=True, outgoing=True, command="ghs",
+          description="随机获取涩情写真")
 async def ghs(context):
-    await context.edit("拍小姐姐写真中 . . .")
+    await context.edit("搞颜色中 . . .")
     status = False
-    for _ in range (10): #最多重试10次
+    for _ in range (20): #最多重试20次
         website = random.randint(0,0)
-        filename = "xjj" + str(random.random())[2:] + ".png"
+        filename = "ghs" + str(random.random())[2:] + ".png"
         try:
             if website == 0:
-                img = get("https://api.pixivweb.com/api.php?return=img")
+                img = get("https://se.jiba.xyz/api.php")
             if img.status_code == 200:
                 with open(filename, 'wb') as f:
                     f.write(img.content)
-                await context.edit("写真我拍好辣，上传中 . . .")
-                await context.client.send_file(context.chat_id,filename,caption="小姐姐来辣~⁄(⁄ ⁄•⁄ω⁄•⁄ ⁄)⁄)")
+                await context.edit("传颜色中 . . .")
+                await context.client.send_file(context.chat_id,filename,caption="#NSFW ⚠️色图警告⚠️")
                 status = True
                 break #成功了就赶紧结束啦！
         except:

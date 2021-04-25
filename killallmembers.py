@@ -1,7 +1,6 @@
 """ PagerMaid Plugin killallmembers """
 from asyncio import sleep
 from telethon.tl.types import ChannelParticipantsAdmins
-from pagermaid import bot
 from pagermaid.listener import listener
 
 @listener(is_plugin=True, outgoing=True, command="killallmembers",
@@ -33,9 +32,13 @@ async def killallmembers(context):
             i = 0
             for user_id in users_wo_admins:
                 try:
-                    await bot.edit_permissions(context.chat_id, user_id, view_messages=False)
+                    await context.client.edit_permissions(context.chat_id, user_id, view_messages=False)
                     i += 1
-                    await context.edit(f'进度:{i}/{len(users_wo_admins)}')
+                    if i == len(users_wo_admins):
+                        await context.edit(f'完成！\n进度:{i}/{len(users_wo_admins)}')
+                    elif (i < 10) or (i % 10 == 0):
+                        await context.edit(f'进度:{i}/{len(users_wo_admins)}'
+                        "{'percent: {:.0f}%'.format(i/len(users_wo_admins))")
                 except:
                     await context.edit('发生错误')
                     await sleep(10)
