@@ -39,7 +39,8 @@ def process_web_data(num, req):
 
 
 @listener(is_plugin=True, outgoing=True, command="diy",
-          description="多个随机api。")
+          description="多个随机api。",
+          parameters="<'sao', 'qh', 'zn', 'tg', 'ba', 'gs'> (可选，用于自定义 api)")
 async def diy(context):
     short_name = ['sao', 'qh', 'zn', 'tg', 'ba', 'gs']
     try:
