@@ -150,6 +150,7 @@ async def ars(context):
     
     if len(context.parameter) == 0:
         await ars_help(context)
+        return
 
     if context.parameter[0] == 'set':
         if len(context.parameter) < 5:
