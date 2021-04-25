@@ -449,6 +449,16 @@
             "supported": true,
             "des-short": "查询含虚拟货币在内的货币价格",
             "des": "命令：bc 数量 货币1 货币2"
+        },
+        {
+            "name": "diy",
+            "version": "1.0",
+            "section": "chat",
+            "maintainer": "ahhhiiii,xtaodada",
+            "size": "2.9 kb",
+            "supported": true,
+            "des-short": "api 聚合",
+            "des": "命令：diy ['sao', 'qh', 'zn', 'tg', 'ba', 'gs']"
         }
     ]
 }
